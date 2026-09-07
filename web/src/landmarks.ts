@@ -1,3 +1,5 @@
+import { buildTurnerHall } from './turnerHall';
+import { TURNER_HALL_SITE } from './turnerHallSite';
 import {buildSummerfest} from './summerfest';
 import {buildNewMuseumCampus} from './newMuseumCampus';
 import {NEW_MUSEUM_SITE} from './newMuseumSite';
@@ -34,6 +36,7 @@ export interface Landmark {
   interpretive?: boolean; focusHeight?: number; /** camera: distance (m), azimuth (deg from north, clockwise), elevation (deg) */ view: [number, number, number]; labelHeight: number;
 }
 export const LANDMARKS: Landmark[] = [
+  {id:'turnerhall',name:'Turner Hall Ballroom',lat:TURNER_HALL_SITE.lat,lon:TURNER_HALL_SITE.lon,osm:'way/69298480',view:[110,255,18],labelHeight:33,focusHeight:12,interpretive:true,blurb:'Henry C. Koch’s 1882–83 Cream City brick hall on Vel R. Phillips Avenue. Twin gables, a central roof tower, arched windows and red masonry bands frame the historic west entrance. The mapped footprint anchors this photo-based exterior; heights and fine details are approximate.'},
   {id:'newmuseum',name:'Nature & Culture Museum of Wisconsin',lat:NEW_MUSEUM_SITE.lat,lon:NEW_MUSEUM_SITE.lon,osm:'way/713732739',view:[200,235,20],labelHeight:42,focusHeight:17,interpretive:true,blurb:'Future completed visualization of the Nature & Culture Museum of Wisconsin at Sixth and McKinley, expected to open in early 2027. Ennead and Kahler Slater’s design uses rounded, offset volumes and sandstone-like concrete inspired by Mill Bluff. The construction parcel is mapped; building dimensions and fine details are interpreted from design renderings.'},
   {id:'port',name:'Port Milwaukee',lat:PORT_FOCUS.lat,lon:PORT_FOCUS.lon,osm:'#map=16/43.01746/-87.89554',view:[1100,100,33],labelHeight:55,focusHeight:16,interpretive:true,blurb:'Explore the cargo docks and rail yards of Jones Island, with waterfront sheds, bulk storage, cranes, a lake freighter and the Lake Express terminal. Tracks and buildings follow mapped geometry; equipment, vessels and fine architectural details are illustrative.'},
   { id: 'marquette', name: 'Marquette Interchange', lat: 43.0347, lon: -87.921, osm: '#map=16/43.0347/-87.921', view: [1100, 135, 43], labelHeight: 70, focusHeight: 22,
@@ -110,6 +113,7 @@ export function buildInterpretive(manifest: Manifest, geo: LandmarkGeo, groundAt
   g.add(buildSummerfest(groundAt),buildDiscoveryWorld(groundAt),buildPortMilwaukee(groundAt),buildNewMuseumCampus(groundAt));
   g.add(buildCouture(groundAt));
   g.add(buildNM(groundAt), buildUsBankCampus(groundAt));
+  g.add(buildTurnerHall(groundAt));
   g.add(buildFiserv(groundAt), buildDeerDistrict(groundAt), buildDeerDistrictBuildings(groundAt));
   const market = buildPublicMarket(groundAt); addPublicMarketSign(market); g.add(market);
 

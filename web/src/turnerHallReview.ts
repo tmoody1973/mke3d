@@ -1,0 +1,18 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { buildTurnerHall } from './turnerHall';
+import { TURNER_HALL_SITE as site } from './turnerHallSite';
+const renderer=new THREE.WebGLRenderer({canvas:document.querySelector('canvas')!,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xc5d5de);
+const camera=new THREE.PerspectiveCamera(43,1,.1,1500),controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;
+const sky=new THREE.HemisphereLight(0xdaebff,0xb4a589,1.7),sun=new THREE.DirectionalLight(0xffeed8,3);sun.position.set(-70,90,55);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-50,right:50,top:50,bottom:-50,near:1,far:250});scene.add(sky,sun);
+const model=buildTurnerHall(()=>0);model.position.set(0,0,0);scene.add(model);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(1000,1000),new THREE.MeshStandardMaterial({color:0x9d9e98,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.02;ground.receiveShadow=true;scene.add(ground);
+const views:Record<string,[number,number,number]>={front:[-81,15,0],corner:[-75,25,55],south:[12,14,80],rear:[80,22,28],roof:[-65,65,50],street:[-39,1.7,9]};
+function view(key:string){camera.position.set(...views[key]);controls.target.set(-4,key==='street'?9:12,0);controls.update();}view('corner');
+document.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-angle]').forEach(o=>o.setAttribute('aria-pressed',String(o===b)));view(b.dataset.angle!);});
+document.querySelector('select')!.onchange=event=>{const mode=(event.target as HTMLSelectElement).value.toLowerCase();model.userData.setLightingMode(mode);sky.intensity=mode==='night'?.25:1.7;sun.intensity=mode==='night'?.15:3;sun.color.setHex(mode==='sunset'?0xffa060:0xffeed8);scene.background=new THREE.Color(mode==='night'?0x111c2e:mode==='sunset'?0xc3a9a0:0xc5d5de);};
+function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}addEventListener('resize',resize);resize();renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera);});
+model.userData.source=site;
+if(import.meta.hot)import.meta.hot.dispose(()=>{renderer.setAnimationLoop(null);controls.dispose();renderer.dispose();});

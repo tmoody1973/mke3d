@@ -2,7 +2,7 @@
 
 An interactive 3D miniature of Milwaukee, Wisconsin, built from real geographic data: every building footprint, road, river and park in the city limits (plus a 1.5 km margin), Lake Michigan, and the real terrain. Rendered in the browser with Three.js.
 
-**Features:** orbit/zoom/pan with mouse or touch · day, sunset and night lighting · 14 landmarks with clickable labels and short descriptions · automated fly-through with pause/resume · vertical exaggeration 1×/2×/4× · lazy-loaded tiles with progress and error states · reduced-detail mode on phones.
+**Features:** orbit/zoom/pan with mouse or touch · day, sunset and night lighting · landmarks with clickable labels and short descriptions · automated fly-through with pause/resume · vertical exaggeration 1×/2×/4× · lazy-loaded tiles with progress and error states · reduced-detail mode on phones.
 
 ## Run it
 
@@ -114,7 +114,7 @@ The Hoan's architectural lighting follows the blue arch outlines, warm gold vert
 
 ## Explore landmarks on foot
 
-Select any landmark and choose **Walk around this landmark**, or use **Street view · walk around** on the destination board. The walking menu includes all 20 landmarks and the current map area. The camera starts 1.7 m above supported ground, facing the selected landmark; building collisions and water checks remain active.
+Select any landmark and choose **Walk around this landmark**, or use **Street view · walk around** on the destination board. The walking menu includes all 21 landmarks and the current map area. The camera starts 1.7 m above supported ground, facing the selected landmark; building collisions and water checks remain active.
 
 Use **WASD** or the on-screen arrows to move, drag to look around and up, and hold **Shift** for a brisk pace. **Back to start** restores your starting point; **Esc / Back to map** restores the aerial view. You can change landmarks and day/sunset/night lighting without leaving walking mode.
 
@@ -157,3 +157,7 @@ North Point now uses the supplied HABS WI-358 tower elevations/plans and current
 Discovery World now uses its 13 mapped building parts instead of the single parent extrusion. The detailed model includes the west Tech wing, four white arc panels around the glazed Aqua building, upper Pilot House with an open steel crown, low promenade, north event pavilion, and a supported boardwalk collar. Its estimated deck datum avoids the old submerged terrain sample. Select **Discovery World** at **1× height**; run `npm run test:discovery` from `web/`. See [the source and accuracy notes](docs/discovery-world-reference.md).
 
 Milwaukee Public Market now follows its mapped footprint with TKWA photo references for the glass, cream masonry, exposed steel, projecting sun shades and west-facing neon sign. Ten oversized source canopy extrusions are replaced with thin entrance canopies. Select **Milwaukee Public Market** at **1× height**; run `npm run test:market` from `web/`. Heights and facade details remain visual estimates. See [the source and accuracy notes](docs/public-market-reference.md).
+
+### Turner Hall Ballroom
+
+Turner Hall now has a mapped exterior model with cream/red masonry, arched windows, twin gables, central dormered roof tower, north addition and side fire escapes. Select **Turner Hall Ballroom** to fly there or walk around it. [Model review](https://mke3d.vercel.app/turner-hall-review.html). Architecture and height details are photo-based estimates; see `docs/turner-hall-reference.md`.
