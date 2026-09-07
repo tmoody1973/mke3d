@@ -9,7 +9,7 @@ test('completed museum campus fits the mapped construction parcel without enteri
  const bounds=new THREE.Box3().setFromObject(campus),parcel=NEW_MUSEUM_PARCEL.bounds;
  assert.ok(bounds.min.x>=parcel.xMin);assert.ok(bounds.max.x<=parcel.xMax);
  assert.ok(bounds.min.z>=parcel.zMin);assert.ok(bounds.max.z<=parcel.zMax);
- assert.ok(bounds.min.y>=NEW_MUSEUM_SITE.floor-.5);
+ assert.ok(bounds.min.y>=NEW_MUSEUM_SITE.floor-.71);
  assert.equal(campus.userData.visualization,'future-completed-design');
  const shell=campus.getObjectByName('future-milwaukee-public-museum')!;
  assert.deepEqual(shell.position.toArray(),[NEW_MUSEUM_SITE.x,NEW_MUSEUM_SITE.floor,NEW_MUSEUM_SITE.z]);
@@ -24,7 +24,7 @@ test('museum perimeter streetlights are grounded, bounded, and clear of the muse
  const parcel=NEW_MUSEUM_PARCEL.bounds;
  for(const p of positions){
   assert.ok(p.x>=parcel.xMin&&p.x<=parcel.xMax&&p.z>=parcel.zMin&&p.z<=parcel.zMax);
-  assert.ok(Math.abs(p.y-(NEW_MUSEUM_SITE.floor+.01*Math.sin(p.x+p.z)))<1e-8);
+  assert.ok(Math.abs(p.y-campus.userData.groundAt(p.x,p.z))<1e-8);
  }
  const pools=campus.getObjectByName('museum-streetlight-ground-light-pools') as THREE.InstancedMesh;
  assert.equal(pools.count,6);
@@ -56,7 +56,7 @@ test('published site-plan landscape connects Vliet to McKinley and renders upwar
  const positions=paths.geometry.getAttribute('position'),normals=paths.geometry.getAttribute('normal');
  for(let i=0;i<positions.count;i++){
   assert.ok(normals.getY(i)>.9,'walk paving faces the sky');
-  assert.ok(Math.abs(positions.getY(i)-ground(positions.getX(i),positions.getZ(i))-.09)<.02,'paving follows local terrain');
+  assert.ok(Math.abs(positions.getY(i)-campus.userData.groundAt(positions.getX(i),positions.getZ(i))-.09)<.02,'paving follows local terrain');
  }
  assert.ok(campus.userData.plantCount>100,'source plan has substantial perimeter planting');
  assert.ok(campus.userData.treePositions.length>=20,'landscape includes street rows and garden trees');

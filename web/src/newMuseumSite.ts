@@ -22,6 +22,7 @@ export const NEW_MUSEUM_SITE = {
   // Interpreted completed museum mass in the south parcel, inset from streets.
   x:-1061.447,z:-1387,lat:43.047544,lon:-87.9180448,
   bearing:0,
+  // Legacy reference datum; the campus derives its actual finished floor from terrain.
   floor:7.664,
   buildingWidth:52,
   buildingDepth:60,

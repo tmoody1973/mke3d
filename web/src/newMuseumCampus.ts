@@ -2,12 +2,14 @@ import * as THREE from 'three';
 import {buildNewMuseum} from './newMuseum.ts';
 import {NEW_MUSEUM_SITE} from './newMuseumSite.ts';
 import {districtGeometry} from './districtGeometry.ts';
+import {createNewMuseumGround} from './newMuseumGround.ts';
 
-export function buildNewMuseumCampus(groundAt:(x:number,z:number)=>number){
+export function buildNewMuseumCampus(terrainAt:(x:number,z:number)=>number){
  const root=new THREE.Group();root.name='new-milwaukee-public-museum-campus';
  const s=NEW_MUSEUM_SITE;
+ const grade=createNewMuseumGround(terrainAt),groundAt=grade.heightAt;
  const museum=buildNewMuseum({width:s.buildingWidth,depth:s.buildingDepth,height:30.48});
- museum.position.set(s.x,s.floor,s.z);museum.rotation.y=s.bearing;root.add(museum);
+ museum.position.set(s.x,grade.floor,s.z);museum.rotation.y=s.bearing;root.add(museum);
  const b=districtGeometry(root);
  const stone=new THREE.MeshStandardMaterial({color:0xd8d1bb,roughness:.9});
  const cream=new THREE.MeshStandardMaterial({color:0xd9d5c7,roughness:.85});
@@ -121,7 +123,11 @@ export function buildNewMuseumCampus(groundAt:(x:number,z:number)=>number){
  });
  for(const [x,z] of [[-1093,-1436],[-1095,-1398],[-1090,-1360]] as Point[]){const y=groundAt(x,z);b.box(x,y+.53,z,.7,.15,2.5,timber,'museum-garden-benches');for(const dz of [-.85,.85])b.box(x,y+.25,z+dz,.45,.5,.12,metal,'museum-bench-feet');}
  for(const [x,z,r] of [[-1084,-1436,.6],[-1082,-1438,.8],[-1086,-1435,.55]])b.add(new THREE.IcosahedronGeometry(r,0).scale(1.3,.7,1).translate(x,groundAt(x,z)+r*.4,z),stone,'museum-garden-boulders');
- b.box(s.x,s.floor-.18,s.z,s.buildingWidth,.36,s.buildingDepth,stone,'museum-foundation');
+ const ground=new THREE.Mesh(grade.geometry,stone);
+ ground.name='museum-graded-ground';ground.receiveShadow=true;
+ ground.userData.walkingSurface='grade';ground.userData.drivingSurface='road';
+ root.add(ground);
+ root.userData.finishedFloor=grade.floor;root.userData.groundAt=groundAt;
  route([[-1094,-1353],[-1080,-1353],[-1055,-1353],[-1026,-1353]],4,pathMaterial,'museum-connected-garden-paths');
  root.userData.landscapeSource={document:'City of Milwaukee File 221922 ZND presentation, July 2023',pages:[8,10,13,14,15],interpretation:'approximate published site-plan layout'};
  root.userData.gardenPath=walkSamples;

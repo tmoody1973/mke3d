@@ -31,7 +31,9 @@ Continuous rounded stone surfaces carry fine horizontal strata, localized scoops
 - A continuous curved pedestrian route connects Vliet, the garden gathering area, the museum's west frontage and McKinley. Branches connect to Sixth Street, with café tables, benches and boulders near gathering areas.
 - Street-edge tree rows and clustered garden trees accompany shrubs, grasses and flowering plants. These represent planting character and organization, not specified species or exact quantities from a planting schedule.
 
-Paths and landscape details sample the local terrain. Campus geometry is batched by material to control rendering cost. Six perimeter streetlights and architectural lighting follow the day, sunset and night modes.
+The museum finished floor is derived from the shipped terrain across its footprint. A level building pad and seven-metre graded apron join the entrance, paths and planting to the surrounding ground; the former fixed-height floating slab is removed. Walking uses this finished surface instead of the terrain buried beneath it. This is interpretive grading rather than a surveyed civil plan.
+
+Paths and landscape details sample the same finished ground. Campus geometry is batched by material to control rendering cost. Six perimeter streetlights and architectural lighting follow the day, sunset and night modes.
 
 ## Review and limits
 

@@ -5,7 +5,7 @@ export interface WalkingWorld {
   findSpawn(x: number, z: number): WalkingPosition | undefined;
   resolve(previous: WalkingPosition, next: WalkingPosition): WalkingPosition & { blocked: boolean };
 }
-type Kind = 'road' | 'terrain' | 'water' | 'building';
+type Kind = 'road' | 'terrain' | 'grade' | 'water' | 'building';
 type Triangle = { a: THREE.Vector3; b: THREE.Vector3; c: THREE.Vector3; walkable: boolean };
 type MeshCache = { signature: string; x: number; z: number; grid: Map<string, Triangle[]> };
 const RADIUS = .3, HEIGHT = 1.7, CELL = 16, CACHE_RADIUS = 180, CACHE_SHIFT = 40;
@@ -77,7 +77,7 @@ export function createWalkingWorld(tiles: THREE.Group, environment: THREE.Group)
       const mesh = object as THREE.Mesh;
       if (!mesh.isMesh) return;
       const tag = mesh.userData.drivingSurface;
-      const kind: Kind | undefined = tag === 'building' || tag === 'road' ? tag
+      const kind: Kind | undefined = mesh.userData.walkingSurface === 'grade' ? 'grade' : tag === 'building' || tag === 'road' ? tag
         : mesh.name === 'BLDG' ? 'building' : mesh.name === 'TERRAIN' ? 'terrain' : mesh.name === 'WATER' ? 'water' : undefined;
       if (kind) meshes.set(mesh, kind);
     });
@@ -129,7 +129,10 @@ export function createWalkingWorld(tiles: THREE.Group, environment: THREE.Group)
         candidates.push({ y, kind: surface.kind });
       }
     }
-    const dry = candidates.filter(candidate => !water.some(y => y >= candidate.y - .02));
+    // Finished site grading replaces the raw terrain beneath it. Keep the
+    // pedestrian on the apron instead of selecting the lower buried terrain.
+    const grade = candidates.filter(c=>c.kind==='grade').reduce((y,c)=>Math.max(y,c.y),-Infinity);
+    const dry = candidates.filter(candidate => candidate.y>=grade-.02 && !water.some(y => y >= candidate.y - .02));
     // Without a previous height, prefer the lowest dry surface to avoid highway spawns.
     dry.sort((a, b) => nearY === undefined ? a.y - b.y
       : Number(b.kind === 'road') - Number(a.kind === 'road') || Math.abs(a.y - nearY) - Math.abs(b.y - nearY));
