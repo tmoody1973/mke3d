@@ -1,3 +1,4 @@
+import { buildMuseumParkLandscape } from './museumParkLandscape';
 import { buildBmoTower } from './bmoTower';
 import { buildRave } from './rave';
 import { RAVE_SITE } from './raveSite';
@@ -113,7 +114,7 @@ export function buildInterpretive(manifest: Manifest, geo: LandmarkGeo, groundAt
   g.add(buildBmoTower(groundAt));
 
   // Museum, memorial, bridge, raised park and garage form one connected lakefront campus.
-  g.add(buildMuseumCampus(groundAt), buildReimanBridge(groundAt), buildLakefrontContext(groundAt), buildMuseumLandscape(groundAt));
+  g.add(buildMuseumCampus(groundAt), buildReimanBridge(groundAt), buildLakefrontContext(groundAt), buildMuseumLandscape(groundAt), buildMuseumParkLandscape(groundAt));
 
   // Deck, arches, and supports share one distance-based alignment.
   if (geo.hoan) g.add(buildHoan(geo.hoan, groundAt));

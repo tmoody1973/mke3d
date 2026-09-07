@@ -1,3 +1,4 @@
+import { buildMuseumParkLandscape } from './museumParkLandscape';
 import * as THREE from 'three';
 import { createCity, type Mode } from './scene';
 import { fetchBuffer, parseTerrain, parseSections, sectionToGeometry } from './loader';
@@ -15,7 +16,7 @@ const groundAt = (x: number, z: number) => bilinearTerrainHeight(terrain, x, z);
 city.addTerrain(terrain);
 city.addWater(parseSections(await fetchBuffer('/data/water.bin')));
 const campus = buildMuseumCampus(groundAt);
-city.landmarks.add(campus, buildReimanBridge(groundAt), buildLakefrontContext(groundAt), buildMuseumLandscape(groundAt));
+city.landmarks.add(campus, buildReimanBridge(groundAt), buildLakefrontContext(groundAt), buildMuseumLandscape(groundAt), buildMuseumParkLandscape(groundAt));
 for (const [i,j] of [[0,0],[0,1],[-1,0]]) {
   const group = new THREE.Group();
   for (const section of parseSections(await fetchBuffer(`/data/tiles/t_${i}_${j}.bin`))) {
@@ -27,6 +28,7 @@ for (const [i,j] of [[0,0],[0,1],[-1,0]]) {
 }
 const views: Record<string, { eye: [number,number,number]; target: [number,number,number] }> = {
   aerial: {eye:[960,340,-240],target:[550,8,-560]},
+  park: {eye:[635,155,-270],target:[459,10.7,-447]},
   north: {eye:[665,155,-1040],target:[513,8,-660]},
   bridge: {eye:[755,100,-800],target:[500,10,-575]},
   gardens: {eye:[775,110,-350],target:[590,5,-457]},
