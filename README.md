@@ -1,8 +1,10 @@
 # Milwaukee in Miniature
 
-An interactive 3D miniature of Milwaukee, Wisconsin, built from real geographic data: every building footprint, road, river and park in the city limits (plus a 1.5 km margin), Lake Michigan, and the real terrain. Rendered in the browser with Three.js.
+An interactive 3D miniature of Milwaukee, Wisconsin, built from mapped buildings, roads, rivers, parks, Lake Michigan, and elevation data. Coverage includes the city limits and a 1.5 km context margin. Rendered in the browser with Three.js.
 
-**Features:** orbit/zoom/pan with mouse or touch · day, sunset and night lighting · landmarks with clickable labels and short descriptions · automated fly-through with pause/resume · vertical exaggeration 1×/2×/4× · lazy-loaded tiles with progress and error states · reduced-detail mode on phones.
+[Explore the live city](https://mke3d.vercel.app) · [Public GitHub repository](https://github.com/tmoody1973/mke3d) · [MIT license](LICENSE)
+
+**Features:** orbit/zoom/pan with mouse or touch · 27 landmark and district destinations · street-level walking · drive the Wienermobile · day, sunset and night lighting · animated Hop streetcars and Summerfest Skyglider · automated landmark tours with speed controls · lazy-loaded tiles with progress and error states · reduced-detail mode on phones.
 
 ## Run it
 
@@ -62,7 +64,9 @@ That runs four scripts in order:
 
 ## Landmarks
 
-The original twelve locations were verified against OpenStreetMap objects on 2026-09-06 (`pipeline/verify_landmarks.py`, results in `data/landmarks_nominatim.json`). Five have **interpretive geometry** — simplified, hand-authored shapes that are recognizable but not measured models: the Art Museum’s Quadracci Pavilion (72 fins, a 66.14 m wingspan, inclined mast, vaulted glass hall, galleria, curved auditorium, and Reiman Bridge), the Hoan Bridge’s 182.88 m central arch with below-road spring points, connected side-span framing, steel floor system, short main piers, roadway details and mapped harbor context (photo-based member dimensions and local bank grades; see `docs/hoan-reference.md`), the three Mitchell Park Domes (42.672 m diameter and 25.908 m height, source-aligned centers, triangular glazing, broad oculi, connecting entrance and rear greenhouses; details remain interpretive, see `docs/domes-reference.md`), the North Point Lighthouse tower, and the Basilica's dome and towers. The rest use ordinary extruded footprints. Descriptions are short summaries of public facts; treat dates and dimensions as approximate.
+The destination board includes **27 landmarks and districts**, with walking access, clickable labels, and short descriptions. Detailed models include the Milwaukee Art Museum campus, Hoan Bridge, American Family Field, Mitchell Park Domes, North Point Lighthouse, Discovery World, Public Market, Summerfest grounds, Nature & Culture Museum of Wisconsin, downtown towers, theaters, hotels, and performance venues. Other destinations use the mapped city geometry.
+
+The original twelve locations were checked against OpenStreetMap on 2026-09-06 (`pipeline/verify_landmarks.py`, results in `data/landmarks_nominatim.json`). Later models use cached source footprints and documented visual references. Dedicated geometry remains interpretive: documented dimensions are distinguished from estimated heights, facade details, landscaping, and lighting in each model's reference notes below.
 
 Building signs use official U.S. Bank, Baird, and BMO logo assets (see `web/public/signs/SOURCES.md`). U.S. Bank Center and BMO Tower locations come from the named footprints in the cached OSM extract. Signs mount against actual full-detail tile walls, unload with those buildings, scale with height exaggeration, and illuminate in night mode. The logo artwork is authentic; dimensions, mounting details, and placement are approximate. U.S. Bank is shown on the east/west faces, Baird on north/south, and BMO on the confirmed west face. Focused landmark views hide other labels until the detail panel is closed.
 
@@ -86,7 +90,7 @@ Building signs use official U.S. Bank, Baird, and BMO logo assets (see `web/publ
 
 The existing live site is [mke3d.vercel.app](https://mke3d.vercel.app) (Vercel project `mke3d`, first deployed 2026-09-06). The public source repository is [tmoody1973/mke3d](https://github.com/tmoody1973/mke3d).
 
-The app is a static site. Configure Vercel with root directory `web`, build command `npm run build`, and output directory `dist`. From `web/`, `npm run build` produces the production site, including the landmark review pages. With the Vercel project linked at the repository root, run `vercel --prod` from the repository root to redeploy. `web/vercel.json` sets cache headers for the tile files. The committed `web/public/data/` assets are required for deployment; regenerating the data pipeline is optional. No application environment variables or secrets are needed.
+The app is a static site. Configure Vercel with root directory `web`, build command `npm run build`, and output directory `dist`. From `web/`, `npm run build` produces the production site, including the landmark review pages. Pushing commits to the connected GitHub `main` branch triggers a production deployment. With the Vercel project linked at the repository root, `vercel --prod` is also available for a manual deployment. Verify the deployment commit and the `mke3d.vercel.app` alias before treating a release as live. `web/vercel.json` sets cache headers for the tile files. The committed `web/public/data/` assets are required for deployment; regenerating the data pipeline is optional. No application environment variables or secrets are needed.
 
 ## License
 
@@ -114,7 +118,7 @@ The Hoan's architectural lighting follows the blue arch outlines, warm gold vert
 
 ## Explore landmarks on foot
 
-Select any landmark and choose **Walk around this landmark**, or use **Street view · walk around** on the destination board. The walking menu includes all 23 landmarks and the current map area. The camera starts 1.7 m above supported ground, facing the selected landmark; building collisions and water checks remain active.
+Select any landmark and choose **Walk around this landmark**, or use **Street view · walk around** on the destination board. The walking menu includes all 27 landmark and district destinations and the current map area. The camera starts 1.7 m above supported ground, facing the selected landmark; building collisions and water checks remain active.
 
 Use **WASD** or the on-screen arrows to move, drag to look around and up, and hold **Shift** for a brisk pace. **Back to start** restores your starting point; **Esc / Back to map** restores the aerial view. You can change landmarks and day/sunset/night lighting without leaving walking mode.
 
@@ -180,4 +184,17 @@ The Rave has a mapped exterior with its three monumental arches, upper arcade, o
 
 ### Street lighting
 
-Mapped street-light locations and road-based infill now use five fixture families, with sunset and night illumination and a bounded pool of nearby lights. [Fixture review](https://mke3d.vercel.app/street-lighting-review.html). Sources, placement and rendering details are recorded in `docs/street-lighting-reference.md`.
+The city includes **1,920 fixtures**: 705 retained mapped lights and 1,215 interpreted placements along mapped streets and paths. Five fixture families illuminate at sunset and night, with a bounded pool of nearby lights. Terrain corrections also resample affected pole and light-pool elevations. [Fixture review](https://mke3d.vercel.app/street-lighting-review.html). Sources, placement and rendering details are recorded in `docs/street-lighting-reference.md`.
+
+
+### Summerfest grounds and animated Skyglider
+
+Henry Maier Festival Park includes nine modeled venues, mapped service buildings, promenades, landscaping, entrances, and festival lighting. The Skyglider follows the approximately **483 m mapped north–south route** above the main walkway. Its **94 open two-person chairs** circulate continuously on outbound and return lanes, turning around at low terminals. The chair count follows a documented 2022 airport release; the approximately 11 m main cable height, support spacing, chair dimensions, and animation speed are photo-based estimates.
+
+The Skyglider animates in the main city and the Summerfest review. Review controls provide **Pause/Play**, **Skyglider route**, **North terminal**, and **South terminal** views; reduced-motion preferences pause it by default. Terminal lighting follows sunset/night mode.
+
+The surrounding road repair removes false bridge-height terrain humps along the Harbor Drive/Lincoln Memorial corridor and Erie Street approach. Ground pavement is fitted to the corrected terrain while elevated freeway decks retain their source geometry. The review includes **Harbor Drive**, **North road connections**, and **Erie Street** camera views.
+
+[Summerfest review](https://mke3d.vercel.app/summerfest-review.html) · [Skyglider close-up](https://mke3d.vercel.app/summerfest-review.html?view=northTerminal) · [Grounds and road references](docs/summerfest-reference.md) · [Skyglider evidence and estimates](docs/skyglider-reference.md)
+
+Run `npm run test:summerfest` from `web/` for the venue, road, and Skyglider checks. These tests cover geometry and behavior; visual comparison with the cited references remains a separate check.
