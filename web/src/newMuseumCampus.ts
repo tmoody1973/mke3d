@@ -9,7 +9,12 @@ export function buildNewMuseumCampus(terrainAt:(x:number,z:number)=>number){
  const s=NEW_MUSEUM_SITE;
  const grade=createNewMuseumGround(terrainAt),groundAt=grade.heightAt;
  const museum=buildNewMuseum({width:s.buildingWidth,depth:s.buildingDepth,height:30.48});
- museum.position.set(s.x,grade.floor,s.z);museum.rotation.y=s.bearing;root.add(museum);
+ const wall=museum.getObjectByName('BLDG') as THREE.Mesh;
+ wall.geometry.computeBoundingBox();
+ // Mullions extend below the floor: anchor the actual wall/glass sill, not
+ // the model bounds, so even their small construction offset cannot float.
+ const sill=wall.geometry.boundingBox!.min.y;
+ museum.position.set(s.x,grade.floor-sill,s.z);museum.rotation.y=s.bearing;root.add(museum);
  const b=districtGeometry(root);
  const stone=new THREE.MeshStandardMaterial({color:0xd8d1bb,roughness:.9});
  const cream=new THREE.MeshStandardMaterial({color:0xd9d5c7,roughness:.85});

@@ -12,7 +12,8 @@ test('completed museum campus fits the mapped construction parcel without enteri
  assert.ok(bounds.min.y>=NEW_MUSEUM_SITE.floor-.71);
  assert.equal(campus.userData.visualization,'future-completed-design');
  const shell=campus.getObjectByName('future-milwaukee-public-museum')!;
- assert.deepEqual(shell.position.toArray(),[NEW_MUSEUM_SITE.x,NEW_MUSEUM_SITE.floor,NEW_MUSEUM_SITE.z]);
+ assert.equal(shell.position.x,NEW_MUSEUM_SITE.x);assert.equal(shell.position.z,NEW_MUSEUM_SITE.z);
+ assert.ok(Math.abs(new THREE.Box3().setFromObject(shell.getObjectByName('BLDG')!).min.y-NEW_MUSEUM_SITE.floor)<.001);
  campus.userData.setLightingMode('night');assert.ok(shell.children.some(o=>o.name==='new-museum-canyon-interior-light'&&o.visible));
  campus.userData.setLightingMode('day');assert.ok(shell.children.every(o=>o.name!=='new-museum-canyon-interior-light'||!o.visible));
 });

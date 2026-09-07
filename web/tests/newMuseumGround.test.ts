@@ -18,12 +18,14 @@ const original=(x:number,z:number)=>bilinearTerrainHeight(terrain,x,z);
 test('museum base meets the actual finished ground instead of the old floating datum',()=>{
  const campus=buildNewMuseumCampus(original);campus.updateMatrixWorld(true);
  const museum=campus.getObjectByName('future-milwaukee-public-museum')!,ground=campus.getObjectByName('museum-graded-ground')!;
+ const base=new THREE.Box3().setFromObject(museum.getObjectByName('BLDG')!).min.y;
+ for(const name of ['new-museum-canyon-scoops-and-slots','new-museum-blue-entry-installation'])assert.ok(Math.abs(new THREE.Box3().setFromObject(museum.getObjectByName(name)!).min.y-base)<.001,'glass and stone meet at the same grade');
  assert.ok(museum.position.y<s.floor-1,'real terrain places the museum more than a metre below its former fixed datum');
  assert.equal(campus.getObjectByName('museum-foundation'),undefined,'no thin elevated foundation slab');
  // Entrance plus both south ground openings, west Commons, and northeast wing.
  for(const [dx,dz] of [[0,24],[-20,24],[20,24],[-25,0],[20,-20]]){
   const hit=new THREE.Raycaster(new THREE.Vector3(s.x+dx,50,s.z+dz),new THREE.Vector3(0,-1,0)).intersectObject(ground)[0];
-  assert.ok(hit&&Math.abs(hit.point.y-museum.position.y)<.005,`base contact at ${dx}, ${dz}`);
+  assert.ok(hit&&Math.abs(hit.point.y-base)<.005,`base contact at ${dx}, ${dz}`);
  }
 });
 
