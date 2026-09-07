@@ -165,3 +165,7 @@ Turner Hall now has a mapped exterior model with cream/red masonry, arched windo
 ### Pabst and Riverside theaters
 
 Both theaters now have detailed exterior models, landmark labels and walking destinations. Pabst includes the Wells Street iron porch, ornate masonry, balcony, mansard roofs and two-sided blade signs. Riverside includes the complete mapped Empire Building, Wisconsin Avenue entrance, projecting bulb-lit marquee and red vertical blade. [Pabst review](https://mke3d.vercel.app/pabst-review.html) · [Riverside review](https://mke3d.vercel.app/riverside-review.html). See `docs/theaters-reference.md` for sources and modeling limits.
+
+### Marcus Center campus
+
+The Marcus Performing Arts Center, Peck Pavilion, north parking garage and State Street skywalk now share a detailed campus model. Public grounds include the current lawn, trees, rain gardens, cafe furniture and memorial corner; night mode lights the stone facade, entrance, pavilion and garage. [Campus review](https://mke3d.vercel.app/marcus-review.html). See `docs/marcus-reference.md` for references and modeling limits.

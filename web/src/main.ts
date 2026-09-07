@@ -1,3 +1,4 @@
+import { MARCUS_SITE, PECK_SITE, removeMarcusPlaceholders } from './marcusSite';
 import { PABST_SITE, RIVERSIDE_SITE, removeTheaterPlaceholders } from './theaterSites';
 import { TURNER_HALL_SITE, removeTurnerHallPlaceholder } from './turnerHallSite';
 import {cityData,DataLoadError} from './dataFetch';
@@ -94,7 +95,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
   let hop: HopFeature | undefined;
   const landmarkButtons = new Map<string, HTMLButtonElement>();
   const locate = (l: Landmark) => {
-    const [x, z] = l.id === 'pabst' ? [PABST_SITE.x,PABST_SITE.z] : l.id === 'riverside' ? [RIVERSIDE_SITE.x,RIVERSIDE_SITE.z] : l.id === 'turnerhall' ? [TURNER_HALL_SITE.x,TURNER_HALL_SITE.z] : l.id === 'summerfest' ? [SUMMERFEST_FOCUS.x,SUMMERFEST_FOCUS.z] : l.id === 'newmuseum' ? [NEW_MUSEUM_SITE.x,NEW_MUSEUM_SITE.z] : l.id === 'port' ? [PORT_FOCUS.x,PORT_FOCUS.z] : l.id === 'usbank' ? [US_BANK_SITE.x, US_BANK_SITE.z] : l.id === 'fiserv' ? [FISERV_SITE.x, FISERV_SITE.z] : l.id === 'nm' ? [NM_SITE.x, NM_SITE.z] : l.id === 'couture' ? [COUTURE_SITE.x, COUTURE_SITE.z] : l.id === 'domes' ? [DOMES_SITE.x, DOMES_SITE.z] : l.id === 'hoan' && geo.hoan
+    const [x, z] = l.id === 'marcus' ? [MARCUS_SITE.x,MARCUS_SITE.z] : l.id === 'peck' ? [PECK_SITE.x,PECK_SITE.z] : l.id === 'pabst' ? [PABST_SITE.x,PABST_SITE.z] : l.id === 'riverside' ? [RIVERSIDE_SITE.x,RIVERSIDE_SITE.z] : l.id === 'turnerhall' ? [TURNER_HALL_SITE.x,TURNER_HALL_SITE.z] : l.id === 'summerfest' ? [SUMMERFEST_FOCUS.x,SUMMERFEST_FOCUS.z] : l.id === 'newmuseum' ? [NEW_MUSEUM_SITE.x,NEW_MUSEUM_SITE.z] : l.id === 'port' ? [PORT_FOCUS.x,PORT_FOCUS.z] : l.id === 'usbank' ? [US_BANK_SITE.x, US_BANK_SITE.z] : l.id === 'fiserv' ? [FISERV_SITE.x, FISERV_SITE.z] : l.id === 'nm' ? [NM_SITE.x, NM_SITE.z] : l.id === 'couture' ? [COUTURE_SITE.x, COUTURE_SITE.z] : l.id === 'domes' ? [DOMES_SITE.x, DOMES_SITE.z] : l.id === 'hoan' && geo.hoan
       ? geo.hoan.archCenter : lonLatToLocal(manifest, l.lon, l.lat);
     return { x, y: groundAt(x, z), z };
   };
@@ -145,7 +146,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
   const deerDistrict = city.landmarks.getObjectByName('deer-district');
   const districtBuildings = city.landmarks.getObjectByName('deer-district-buildings');
   const turnerHall = city.landmarks.getObjectByName('turner-hall-ballroom');
-  const theaters = ['pabst-theater','riverside-theater'].map(name=>city.landmarks.getObjectByName(name));
+  const theaters = ['pabst-theater','riverside-theater','marcus-campus'].map(name=>city.landmarks.getObjectByName(name));
   const lightTheaters=()=>theaters.forEach(model=>model?.userData.setLightingMode?.(city.mode));
   lightTheaters();
   const lightFiserv = () => {
@@ -183,7 +184,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
   const b = manifest.bounds; const clamp = () => { const t = city.controls.target; t.x = THREE.MathUtils.clamp(t.x, b.x0, b.x1); t.z = THREE.MathUtils.clamp(t.z, b.z0, b.z1); };
 
   // A geographic circuit keeps the tour from repeatedly crossing the city.
-  const tourOrder = ['usbank', 'couture', 'mam', 'warmemorial', 'nm', 'lighthouse', 'fiserv', 'turnerhall', 'newmuseum', 'cityhall', 'pabst', 'bmo', 'riverside', 'market', 'thirdward', 'marquette', 'domes', 'amfam', 'basilica', 'hoan', 'port', 'summerfest', 'discovery'];
+  const tourOrder = ['usbank', 'couture', 'mam', 'warmemorial', 'nm', 'lighthouse', 'fiserv', 'turnerhall', 'newmuseum', 'cityhall', 'marcus', 'peck', 'pabst', 'bmo', 'riverside', 'market', 'thirdward', 'marquette', 'domes', 'amfam', 'basilica', 'hoan', 'port', 'summerfest', 'discovery'];
   const tourStops = [...LANDMARKS].sort((a, b) => {
     const rank = (id: string) => { const i = tourOrder.indexOf(id); return i < 0 ? tourOrder.length : i; };
     return rank(a.id) - rank(b.id);
@@ -194,7 +195,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
     mobile ? 1800 : 3200, mobile ? 7000 : 16000, mobile ? 4 : 6);
   const signs = new BuildingSigns(BUILDING_SIGNS, manifest.tileSize, `${import.meta.env.BASE_URL}signs`);
   signs.setMode(city.mode);
-  tiles.onTileReady = (group, tile, lod) => { adaptSummerfestTile(group,tile,groundAt); removePortPlaceholders(group,tile); detailJonesIslandBuildings(group,tile); removeMuseumPlaceholder(group, tile); removeDiscoveryPlaceholder(group, tile); removePublicMarketPlaceholder(group, tile); removeCityHallPlaceholder(group, tile); removeDomesPlaceholder(group, tile); removeAmFamPlaceholder(group, tile); removeCouturePlaceholder(group, tile); removeNmPlaceholder(group, tile); removeUsBankPlaceholder(group, tile); removeFiservPlaceholder(group, tile); removeDeerDistrictBuildingPlaceholders(group, tile); removeTurnerHallPlaceholder(group, tile); removeTheaterPlaceholders(group, tile); adaptHopPassages(group, tile); adaptLighthouseTile(group, tile, terrainData!, groundAt); adaptHoanContextTile(group, tile, rawTerrainData!, groundAt); signs.attach(group, tile, lod); };
+  tiles.onTileReady = (group, tile, lod) => { adaptSummerfestTile(group,tile,groundAt); removePortPlaceholders(group,tile); detailJonesIslandBuildings(group,tile); removeMuseumPlaceholder(group, tile); removeDiscoveryPlaceholder(group, tile); removePublicMarketPlaceholder(group, tile); removeCityHallPlaceholder(group, tile); removeDomesPlaceholder(group, tile); removeAmFamPlaceholder(group, tile); removeCouturePlaceholder(group, tile); removeNmPlaceholder(group, tile); removeUsBankPlaceholder(group, tile); removeFiservPlaceholder(group, tile); removeDeerDistrictBuildingPlaceholders(group, tile); removeTurnerHallPlaceholder(group, tile); removeTheaterPlaceholders(group, tile); removeMarcusPlaceholders(group, tile); adaptHopPassages(group, tile); adaptLighthouseTile(group, tile, terrainData!, groundAt); adaptHoanContextTile(group, tile, rawTerrainData!, groundAt); signs.attach(group, tile, lod); };
   let firstLoad = true;
   tiles.onProgress = (done, total) => {
     const pct = total ? Math.round(100 * done / total) : 100; bar.style.width = `${pct}%`;
@@ -320,7 +321,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
   // Start beside landmarks, then let the walking world's dry-ground and
   // collision checks find the nearest supported foot position.
   const walkOffsets:Record<string,[number,number]>={
-    pabst:[10,30],riverside:[7,36],turnerhall:[-32,0],fiserv:[132,15],thirdward:[20,20],market:[-35,25],mam:[-65,50],
+    marcus:[72,-8],peck:[30,15],pabst:[10,30],riverside:[7,36],turnerhall:[-32,0],fiserv:[132,15],thirdward:[20,20],market:[-35,25],mam:[-65,50],
     newmuseum:[-45,40],amfam:[-155,-130],usbank:[-70,50],couture:[-45,45],
     nm:[-60,60],warmemorial:[-45,0],discovery:[-65,0],lighthouse:[20,25],
   };

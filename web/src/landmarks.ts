@@ -1,3 +1,5 @@
+import { buildMarcusCampus } from './marcusCampus';
+import { MARCUS_SITE, PECK_SITE } from './marcusSite';
 import { buildPabstTheater } from './pabstTheater';
 import { buildRiversideTheater } from './riversideTheater';
 import { PABST_SITE, RIVERSIDE_SITE } from './theaterSites';
@@ -39,6 +41,8 @@ export interface Landmark {
   interpretive?: boolean; focusHeight?: number; /** camera: distance (m), azimuth (deg from north, clockwise), elevation (deg) */ view: [number, number, number]; labelHeight: number;
 }
 export const LANDMARKS: Landmark[] = [
+  {id:'marcus',name:'Marcus Performing Arts Center',lat:MARCUS_SITE.lat,lon:MARCUS_SITE.lon,osm:'way/68762980',view:[215,125,30],labelHeight:35,focusHeight:14,interpretive:true,blurb:'The performing arts campus on Water Street: sculptural stone halls, a glazed public entrance, colored facade lighting, Peck Pavilion and landscaped community grounds. The north parking structure connects across State Street by skywalk. Details are interpreted from photographs and mapped footprints.'},
+  {id:'peck',name:'Peck Pavilion',lat:PECK_SITE.lat,lon:PECK_SITE.lon,osm:'way/599981655',view:[85,125,18],labelHeight:12,focusHeight:4,interpretive:true,blurb:'The Marcus Center’s outdoor riverfront stage, with an open roof structure, fixed seating, and an adjoining lawn, honey locusts, cafe tables and public paths.'},
   {id:'pabst',name:'Pabst Theater',lat:PABST_SITE.lat,lon:PABST_SITE.lon,osm:'way/68649538',view:[105,155,18],labelHeight:32,focusHeight:13,interpretive:true,blurb:'Otto Strack’s 1895 theater on Wells Street. Ornamental brick and stone, a raised entrance pavilion, iron porch, balcony and dark mansard roof define this historic facade. The footprint is mapped; decorative details and heights are photo-based estimates.'},
   {id:'riverside',name:'Riverside Theater',lat:RIVERSIDE_SITE.lat,lon:RIVERSIDE_SITE.lon,osm:'way/68641417',view:[150,170,20],labelHeight:53,focusHeight:22,interpretive:true,blurb:'The 1928 theater occupies the Empire Building at Wisconsin Avenue and the Milwaukee River. Its projecting illuminated marquee and tall red blade sign mark the entrance below the office floors. The shared building follows its mapped footprint; facade details are interpreted from references.'},
   {id:'turnerhall',name:'Turner Hall Ballroom',lat:TURNER_HALL_SITE.lat,lon:TURNER_HALL_SITE.lon,osm:'way/69298480',view:[110,255,18],labelHeight:33,focusHeight:12,interpretive:true,blurb:'Henry C. Koch’s 1882–83 Cream City brick hall on Vel R. Phillips Avenue. Twin gables, a central roof tower, arched windows and red masonry bands frame the historic west entrance. The mapped footprint anchors this photo-based exterior; heights and fine details are approximate.'},
@@ -118,6 +122,7 @@ export function buildInterpretive(manifest: Manifest, geo: LandmarkGeo, groundAt
   g.add(buildSummerfest(groundAt),buildDiscoveryWorld(groundAt),buildPortMilwaukee(groundAt),buildNewMuseumCampus(groundAt));
   g.add(buildCouture(groundAt));
   g.add(buildNM(groundAt), buildUsBankCampus(groundAt));
+  g.add(buildMarcusCampus(groundAt));
   g.add(buildTurnerHall(groundAt), buildPabstTheater(groundAt), buildRiversideTheater(groundAt));
   g.add(buildFiserv(groundAt), buildDeerDistrict(groundAt), buildDeerDistrictBuildings(groundAt));
   const market = buildPublicMarket(groundAt); addPublicMarketSign(market); g.add(market);
