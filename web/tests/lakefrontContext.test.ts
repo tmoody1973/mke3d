@@ -1,10 +1,34 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
+import { bilinearTerrainHeight } from '../src/localTerrain.ts';
 import { buildLakefrontContext, PARK_DECK_Y } from '../src/lakefrontContext.ts';
 import { buildReimanBridge } from '../src/reimanBridge.ts';
 
 const terrain = (x: number, z: number) => 3 + x * .001 + z * .0005;
+
+test('existing lawn interiors remain above the actual sloping bluff terrain', () => {
+  const bytes=readFileSync(new URL('../public/data/terrain.bin',import.meta.url));
+  const data=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+  const nx=data.getUint32(4,true),ny=data.getUint32(8,true);
+  const terrainData={nx,ny,x0:data.getFloat32(12,true),y0:data.getFloat32(16,true),step:data.getFloat32(20,true),
+    heights:new Float32Array(bytes.buffer.slice(bytes.byteOffset+24,bytes.byteOffset+24+nx*ny*4)),colors:new Uint8Array()};
+  const ground=(x:number,z:number)=>bilinearTerrainHeight(terrainData,x,z);
+  const context=buildLakefrontContext(ground);
+  const mesh=context.getObjectByName('campus-lawns-and-trees') as THREE.Mesh;
+  const p=mesh.geometry.getAttribute('position');let samples=0;
+  for(let i=0;i<p.count;i+=3){
+    let x=0,y=0,z=0,isGround=true;
+    for(let k=i;k<i+3;k++){
+      x+=p.getX(k)/3;y+=p.getY(k)/3;z+=p.getZ(k)/3;
+      if(Math.abs(p.getY(k)-ground(p.getX(k),p.getZ(k))-.13)>.002)isGround=false;
+    }
+    if(!isGround)continue;
+    assert.ok(y>ground(x,z)-.6,`buried lawn interior at ${x},${z}`);samples++;
+  }
+  assert.ok(samples>1000,'check ground lawns rather than raised roof or tree geometry');
+});
 
 test('lakefront context produces finite, valid merged geometry within its draw budget', () => {
   const context = buildLakefrontContext(terrain);

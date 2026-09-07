@@ -52,8 +52,19 @@ export function buildLakefrontContext(groundAt: (x:number,z:number)=>number) {
   // Source paths are lifted with the rooftop rather than left buried in its solid terrain surface.
   for(const path of CAMPUS_CONTEXT.paths)for(let i=0;i<path.length-1;i++)strip(path[i],path[i+1],2.25,PARK_DECK_Y+.14,white);
   const greens:number[]=[];
+  function groundTriangle(a:XZ,b:XZ,c:XZ,depth=0) {
+    const edges=[[a,b,c],[b,c,a],[c,a,b]].sort((u,v)=>Math.hypot(v[1][0]-v[0][0],v[1][1]-v[0][1])-Math.hypot(u[1][0]-u[0][0],u[1][1]-u[0][1]));
+    const [p,q,r]=edges[0];
+    if(depth<14&&Math.hypot(q[0]-p[0],q[1]-p[1])>4){
+      const midpoint=[(p[0]+q[0])/2,(p[1]+q[1])/2];
+      groundTriangle(p,midpoint,r,depth+1);groundTriangle(midpoint,q,r,depth+1);return;
+    }
+    // Short faces follow the bluff instead of cutting through it between distant source vertices.
+    for(const [x,z] of [a,c,b])greens.push(x,groundAt(x,z)+.13,z);
+  }
   for(const patch of CAMPUS_CONTEXT.grass){
-    const tri=patch.points.map(([x,z])=>[x,patch.raised?PARK_DECK_Y+.19:groundAt(x,z)+.13,z]);
+    if(!patch.raised){groundTriangle(patch.points[0],patch.points[1],patch.points[2]);continue;}
+    const tri=patch.points.map(([x,z])=>[x,PARK_DECK_Y+.19,z]);
     // Source rings use northing; reverse when mapped to the scene's south-positive Z.
     greens.push(...tri[0],...tri[2],...tri[1]);
   }

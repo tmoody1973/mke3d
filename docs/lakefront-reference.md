@@ -13,3 +13,15 @@ Sources:
 - Supplied aerial and street-level reference images
 
 Run `npm run test:museum` from `web/` to verify the context's geometry budget, finite merged buffers, open garage bays, and the shared park-deck/Reiman Bridge landing elevation.
+
+## September 7 landscape references
+
+The supplied Google Earth views at 2:32–2:40 PM distinguish three landscape levels: the elevated Museum Center Park garage roof; the lower museum forecourt and Cudahy Gardens; and the wooded bluff west of Lincoln Memorial Drive. The Mason Street vehicle bridge and Reiman pedestrian bridge cross above the lower roadway. Their surroundings must not be flattened into one park platform.
+
+The [Museum's Cudahy Gardens description](https://mam.org/visit/cudahy-gardens/) identifies a formal garden approximately 600 by 100 feet, five lawn compartments separated by hedges, fountain plazas at its ends, and a connecting water channel. It also identifies linden and crabapple plantings. This establishes the garden's organization; the supplied aerials and cached OSM polygons control placement in the model. Individual tree positions, canopy sizes and hedge dimensions are interpretive.
+
+The new [Art Museum review](https://mke3d.vercel.app/museum-review.html) includes campus, north green corridor, Mason Street bridge, garden and street-level views for comparison with those references.
+
+`museumLandscape.ts` fills approximately 23,456 square metres of omitted mapped grass and woodland ground, adds 196 trees, and supplies four transverse garden paths with hedge dividers. Source lawn/wood polygons are unioned, then existing campus lawn footprints and buffered roads/paths are subtracted before triangulation. This prevents the triangular holes produced by rejecting entire triangles at path edges. Planting is denser in woodland than on open lawns, and includes the west bluff patch. Individual plant positions remain estimates.
+
+Existing ground lawn triangles in `lakefrontContext.ts` are subdivided before sampling terrain, so their interiors follow the bluff instead of disappearing below it. The raised garage-roof lawn retains its level datum. The 17 museum tests pass, including a check of 19,732 existing ground-lawn triangle interiors against the actual terrain, new-lawn coverage, road/path clearance and the bridge landing. Browser review covered the north green corridor and formal gardens; TypeScript and the production build passed.

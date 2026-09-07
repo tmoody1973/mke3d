@@ -152,6 +152,8 @@ The 72 fins, 217-foot wingspan, and 90-foot hall ceiling follow the [Museum’s 
 
 Run `npm run test:museum` from `web/` to check actual fin continuity, winding, roof clearance, orientation, entrance-to-bridge contact, geometry budget, and removal of the old pavilion without changing neighboring buildings.
 
+The [Art Museum landscape review](https://mke3d.vercel.app/museum-review.html?view=north) provides dedicated views of the Lincoln Memorial Drive green corridor, Mason Street bridge, Cudahy Gardens and museum forecourt. Landscape placement follows cached OSM footprints and the supplied Google Earth references; tree sizes and planting details are interpretive. See [lakefront reference notes](docs/lakefront-reference.md).
+
 The broader museum campus model joins the Quadracci Pavilion to the raised War Memorial Center, open Court of Honor, Kahler lakeward addition, Reiman Bridge, and Museum Center Park. The dedicated `web/src/warMemorial.ts` uses Saarinen's original second-floor plan to arrange unequal cruciform wings around the elevated court, with sculpted piers and a five-panel west mural treatment. Select **War Memorial Center** in the destination board to inspect it at 1× height. Run `npm run test:warmemorial` for its geometry and lighting checks. Cached OSM footprints and paths control the plan alignment. Museum Center Park (way 55206404) is mapped as a park, so the open parking structure below its raised roof, structural levels, stalls, trees, and north surface lot are interpretive additions based on supplied visual references. The park roof and Reiman walking deck meet at elevation 10.7 m. See `docs/museum-campus-reference.md` and `docs/lakefront-reference.md` for sources and modeling limits.
 
 ### American Family Field

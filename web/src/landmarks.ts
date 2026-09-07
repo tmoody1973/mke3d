@@ -27,6 +27,7 @@ import { lonLatToLocal } from './geo';
 import { buildHoan } from './hoan';
 import { buildMuseumCampus } from './museumCampus';
 import { buildLakefrontContext } from './lakefrontContext';
+import { buildMuseumLandscape } from './museumLandscape';
 import { buildReimanBridge } from './reimanBridge';
 import { buildDomes } from './domes';
 import { DOMES_SITE, buildDomesServiceBuildings, groundDomesFoundations } from './domesSite';
@@ -109,7 +110,7 @@ export function buildInterpretive(manifest: Manifest, geo: LandmarkGeo, groundAt
   cityHall.rotation.y = CITY_HALL_SITE.bearing; g.add(cityHall);
 
   // Museum, memorial, bridge, raised park and garage form one connected lakefront campus.
-  g.add(buildMuseumCampus(groundAt), buildReimanBridge(groundAt), buildLakefrontContext(groundAt));
+  g.add(buildMuseumCampus(groundAt), buildReimanBridge(groundAt), buildLakefrontContext(groundAt), buildMuseumLandscape(groundAt));
 
   // Deck, arches, and supports share one distance-based alignment.
   if (geo.hoan) g.add(buildHoan(geo.hoan, groundAt));
