@@ -1,0 +1,12 @@
+.git
+.remember
+.impeccable
+data/raw
+*_threejs_photo_references
+pipeline/.venv
+**/__pycache__
+**/node_modules
+web/dist
+**/.env*
+**/*.tsbuildinfo
+**/.DS_Store

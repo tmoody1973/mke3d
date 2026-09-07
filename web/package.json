@@ -1,0 +1,42 @@
+{
+  "name": "web",
+  "private": true,
+  "license": "MIT",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.ts",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test:hoan": "node --test tests/hoan.test.ts tests/hoanLighting.test.ts tests/hoanSite.test.ts",
+    "test:signs": "node --test tests/buildingSigns.test.ts",
+    "test:tour": "node --test tests/tour.test.ts",
+    "test:warmemorial": "node --test tests/warMemorial.test.ts",
+    "test:driving": "node --test tests/driving*.test.ts tests/wienermobile.test.ts",
+    "test:discovery": "node --test tests/discoveryWorld.test.ts tests/discoverySite.test.ts tests/discoveryRoof.test.ts",
+    "test:market": "node --test tests/publicMarket.test.ts tests/publicMarketSite.test.ts",
+    "test:cityhall": "node --test tests/cityHall.test.ts tests/cityHallSite.test.ts",
+    "preview": "vite preview",
+    "test:museum": "node --test tests/museum.test.ts tests/museumSite.test.ts tests/museumCampus.test.ts tests/lakefrontContext.test.ts",
+    "test:domes": "node --test tests/domes.test.ts tests/domesSite.test.ts",
+    "test:amfam": "node --test tests/amfam*.test.ts",
+    "test:lighthouse": "node --test tests/lighthouse.test.ts tests/lighthouseSite.test.ts tests/localTerrain.test.ts",
+    "test:hop": "node --test tests/hop*.test.ts",
+    "test:couture": "node --test tests/couture*.test.ts",
+    "test:fiserv": "node --test tests/fiserv*.test.ts tests/deerDistrict*.test.ts",
+    "test:nm": "node --test tests/nm*.test.ts",
+    "test:usbank": "node --test tests/usBank*.test.ts",
+    "test:port": "node --test tests/port*.test.ts tests/jonesIsland*.test.ts",
+    "test:newmuseum": "node --test tests/newMuseum*.test.ts",
+    "test:summerfest": "node --test tests/summerfest.test.ts",
+    "test:walking": "node --test tests/walking*.test.ts"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "vite": "^8.2.2"
+  },
+  "dependencies": {
+    "@types/three": "^0.185.4",
+    "three": "^0.185.1"
+  }
+}

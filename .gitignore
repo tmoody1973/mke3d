@@ -1,0 +1,35 @@
+# Dependencies and generated build files
+node_modules/
+.venv/
+venv/
+web/dist/
+__pycache__/
+*.py[cod]
+*.tsbuildinfo
+
+# Reproducible source-data downloads; web/public/data stays tracked
+data/raw/
+
+# Local research photographs and design-session artifacts
+*_threejs_photo_references/
+.impeccable/
+.remember/
+
+# Local configuration and credentials
+.vercel/
+.env
+.env.*
+!.env.example
+!.env.sample
+credentials.json
+credentials.*.json
+service-account*.json
+service_account*.json
+*.pem
+*.key
+
+# Operating-system and tool caches
+.DS_Store
+*.log
+.pytest_cache/
+.ruff_cache/

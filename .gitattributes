@@ -1,0 +1,11 @@
+* text=auto
+
+# Runtime city tiles and other binary assets are committed directly to Git.
+*.bin binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ttf binary
+*.woff binary
+*.woff2 binary

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Hop · Vehicle review</title>
+<style>
+body{margin:0;background:#cfd9dc;color:#17262d;font:15px system-ui}canvas{display:block;width:100vw;height:100vh}
+header{position:absolute;top:22px;left:26px}h1{font-size:22px;margin:0 0 5px}p{margin:0;font-size:13px}
+nav{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:max-content;max-width:90vw;padding:12px;background:#f6f4ef;border-radius:10px}
+button,select{font:inherit;padding:8px 12px;border:1px solid #a9b3b8;border-radius:5px;background:white;color:#17262d}button[aria-pressed=true]{background:#25373e;color:white}
+</style></head>
+<body><header><h1>The Hop · Vehicle study</h1><p>1× physical scale · reference-based geometry</p></header>
+<canvas aria-label="Streetcar model preview"></canvas>
+<nav aria-label="Vehicle review controls">
+<button data-angle="quarter" aria-pressed="true">Three-quarter</button><button data-angle="side" aria-pressed="false">Side</button><button data-angle="front" aria-pressed="false">Cab</button><button data-angle="roof" aria-pressed="false">Roof</button>
+<button id="doors" aria-pressed="false">Open doors</button>
+<select aria-label="Lighting"><option>Day</option><option>Sunset</option><option>Night</option></select>
+</nav>
+<script type="module" src="/src/hopReview.ts"></script></body></html>

@@ -1,0 +1,127 @@
+{
+  "counts": {
+    "bridge_surface_contact_nodes": 3376,
+    "bridge_ways": 2331,
+    "inverted_residual_crossings": 0,
+    "ordered_geometric_crossings_excluding_hoan_proxy": 3030,
+    "profile_functions": 7399,
+    "profiled_bridge_ways": 2331,
+    "residual_crossing_conflicts": 5,
+    "shared_bridge_nodes": 531,
+    "supported_road_ways": 142645
+  },
+  "limitations": "Residuals are short connected-loop conflicts where the class grade cap and requested clearance cannot both be satisfied from cached OSM ordering and the 40 m terrain surface. Values are modeling diagnostics, not survey elevations.",
+  "max_residuals_m": {
+    "bridge_surface_contact_seam": 8.881784197001252e-16,
+    "crossing_clearance_deficit": 1.338,
+    "hoan_endpoint_contract": 0.0,
+    "shared_bridge_seam": 1.1102230246251565e-16
+  },
+  "policy": {
+    "grade_caps": {
+      "freeway": 0.08,
+      "local_road": 0.12,
+      "path": 0.2,
+      "steps": 0.65
+    },
+    "non_vehicle_crossing_clearance_m": 2.7,
+    "skipped_proxy_policy": "Hoan proxy interiors excluded; endpoint contacts remain ground + 14.4 m",
+    "topology": "exact repeated source coordinates only",
+    "vehicle_crossing_clearance_m": 5.4
+  },
+  "residuals": [
+    {
+      "deficit_m": 1.338,
+      "lower_highway": "footway",
+      "lower_layer": null,
+      "lower_name": null,
+      "lower_way_id": 1252723592,
+      "modeled_clearance_m": 1.362,
+      "required_clearance_m": 2.7,
+      "scene_xy_m": [
+        185.729,
+        -9686.81
+      ],
+      "upper_bridge": "cantilever",
+      "upper_highway": "footway",
+      "upper_layer": "1",
+      "upper_name": null,
+      "upper_way_id": 1252723658
+    },
+    {
+      "deficit_m": 0.898,
+      "lower_highway": "footway",
+      "lower_layer": null,
+      "lower_name": null,
+      "lower_way_id": 691713812,
+      "modeled_clearance_m": 1.802,
+      "required_clearance_m": 2.7,
+      "scene_xy_m": [
+        32.377,
+        -414.023
+      ],
+      "upper_bridge": "yes",
+      "upper_highway": "steps",
+      "upper_layer": "1",
+      "upper_name": null,
+      "upper_way_id": 997680374
+    },
+    {
+      "deficit_m": 0.428,
+      "lower_highway": "footway",
+      "lower_layer": "1",
+      "lower_name": null,
+      "lower_way_id": 725718679,
+      "modeled_clearance_m": 2.272,
+      "required_clearance_m": 2.7,
+      "scene_xy_m": [
+        -3489.998,
+        -229.141
+      ],
+      "upper_bridge": "viaduct",
+      "upper_highway": "footway",
+      "upper_layer": "2",
+      "upper_name": null,
+      "upper_way_id": 744177512
+    },
+    {
+      "deficit_m": 0.023,
+      "lower_highway": "footway",
+      "lower_layer": "1",
+      "lower_name": null,
+      "lower_way_id": 725718679,
+      "modeled_clearance_m": 2.677,
+      "required_clearance_m": 2.7,
+      "scene_xy_m": [
+        -3468.612,
+        -228.682
+      ],
+      "upper_bridge": "viaduct",
+      "upper_highway": "footway",
+      "upper_layer": "2",
+      "upper_name": null,
+      "upper_way_id": 725718673
+    },
+    {
+      "deficit_m": 0.023,
+      "lower_highway": "footway",
+      "lower_layer": null,
+      "lower_name": null,
+      "lower_way_id": 691713811,
+      "modeled_clearance_m": 2.677,
+      "required_clearance_m": 2.7,
+      "scene_xy_m": [
+        -39.433,
+        -420.004
+      ],
+      "upper_bridge": "yes",
+      "upper_highway": "steps",
+      "upper_layer": "1",
+      "upper_name": null,
+      "upper_way_id": 997680376
+    }
+  ],
+  "source": "Geofabrik wisconsin-latest.osm.pbf",
+  "source_extracted": "2026-09-06",
+  "terrain": "web/public/data/terrain.bin; 40 m DEM sampling, scene height relative to Lake Michigan datum"
+}

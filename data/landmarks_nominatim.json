@@ -1,0 +1,86 @@
+[
+ {
+  "name": "Milwaukee Art Museum",
+  "lat": 43.0398098,
+  "lon": -87.8970583,
+  "osm": "way/51865486",
+  "display": "Milwaukee Art Museum, 700, North Art Museum Drive, Juneautown, Downtown, Milwauk"
+ },
+ {
+  "name": "Hoan Bridge",
+  "lat": 43.0232884,
+  "lon": -87.8984503,
+  "osm": "relation/16271476",
+  "display": "Hoan Bridge, South Harbor Drive, Port of Milwaukee, Jones Island, Port of Milwau"
+ },
+ {
+  "name": "Milwaukee City Hall",
+  "lat": 43.0417052,
+  "lon": -87.9097516,
+  "osm": "way/66709384",
+  "display": "Milwaukee City Hall, 200, East Wells Street, Historic Financial District, Juneau"
+ },
+ {
+  "name": "Fiserv Forum",
+  "lat": 43.0450096,
+  "lon": -87.9174871,
+  "osm": "relation/10689047",
+  "display": "Fiserv Forum, 1111, North Vel R. Phillips Avenue, Park East, Westown, Downtown, "
+ },
+ {
+  "name": "American Family Field",
+  "lat": 43.0280619,
+  "lon": -87.9712694,
+  "osm": "way/663006116",
+  "display": "American Family Field, 1, Brewers Way, Story Hill, Near West Side, Milwaukee, Mi"
+ },
+ {
+  "name": "Mitchell Park Domes",
+  "lat": 43.0263777,
+  "lon": -87.9454144,
+  "osm": "way/54622334",
+  "display": "Mitchell Park Horticultural Conservatory, 524, South Layton Boulevard, Mitchell "
+ },
+ {
+  "name": "Discovery World",
+  "lat": 43.0369136,
+  "lon": -87.8961382,
+  "osm": "way/55205380",
+  "display": "Discovery World Science + Technology Center, 500, North Harbor Drive, Juneautown"
+ },
+ {
+  "name": "North Point Lighthouse",
+  "lat": 43.0656749,
+  "lon": -87.8714176,
+  "osm": "way/403385111",
+  "display": "North Point Lighthouse, 2650, North Wahl Avenue, Historic Water Tower Neighborho"
+ },
+ {
+  "name": "Basilica of St. Josaphat",
+  "lat": 43.0023884,
+  "lon": -87.9191506,
+  "osm": "way/663419192",
+  "display": "Basilica of Saint Josaphat, 601, West Lincoln Avenue, Lincoln Village, Milwaukee"
+ },
+ {
+  "name": "Historic Third Ward",
+  "lat": 43.0327715,
+  "lon": -87.9058425,
+  "osm": "relation/5913975",
+  "display": "Historic Third Ward, Milwaukee, Milwaukee County, Wisconsin, United States"
+ },
+ {
+  "name": "Henry Maier Festival Park",
+  "lat": 43.0308639,
+  "lon": -87.8995549,
+  "osm": "relation/8154902",
+  "display": "Henry Maier Festival Park, 200, North Harbor Drive, Historic Third Ward, Downtow"
+ },
+ {
+  "name": "Milwaukee Public Market",
+  "lat": 43.0352575,
+  "lon": -87.9080905,
+  "osm": "way/53160687",
+  "display": "Milwaukee Public Market, 400, North Water Street, Historic Third Ward, Downtown,"
+ }
+]

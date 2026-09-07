@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Couture · Model review</title>
+<style>
+body{margin:0;background:#cfd9dc;color:#17262d;font:15px system-ui}canvas{display:block;width:100vw;height:100vh}
+header{position:absolute;top:16px;left:18px;background:#f6f4efed;padding:12px 16px;border-radius:8px}h1{font-size:22px;margin:0 0 5px}p{margin:0;font-size:13px}
+nav{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:max-content;max-width:90vw;padding:12px;background:#f6f4ef;border-radius:10px}
+button,select{font:inherit;padding:8px 12px;border:1px solid #a9b3b8;border-radius:5px;background:white;color:#17262d}button[aria-pressed=true]{background:#25373e;color:white}
+</style></head>
+<body><header><h1>The Couture · Model study</h1><p>1× physical scale · reference-based geometry</p></header>
+<canvas aria-label="Couture model preview"></canvas>
+<nav aria-label="Couture review controls">
+<button data-angle="east" aria-pressed="true">Lakefront</button><button data-angle="west" aria-pressed="false">West</button><button data-angle="crown" aria-pressed="false">Crown</button><button data-angle="hall" aria-pressed="false">Transit hall</button>
+
+<select aria-label="Lighting"><option>Day</option><option>Sunset</option><option>Night</option></select>
+</nav>
+<script type="module" src="/src/coutureReview.ts"></script></body></html>

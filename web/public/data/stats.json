@@ -1,0 +1,35 @@
+{
+ "generated": "2026-09-06",
+ "buildings": 426962,
+ "buildings_in_city_limits": 253689,
+ "height_source": {
+  "estimate": {
+   "count": 273729,
+   "pct": 64.1
+  },
+  "levels": {
+   "count": 5541,
+   "pct": 1.3
+  },
+  "height": {
+   "count": 311,
+   "pct": 0.1
+  },
+  "mprop": {
+   "count": 147378,
+   "pct": 34.5
+  },
+  "landmark": {
+   "count": 3,
+   "pct": 0.0
+  }
+ },
+ "max_height_m": 184.79999999999998,
+ "tiles": 195,
+ "tile_bytes_total": 425423096,
+ "lod_bytes_total": 44647716,
+ "water_polygons": 688,
+ "lake_area_km2": 84.3,
+ "green_polygons": 2417,
+ "osm_elements": 519854
+}

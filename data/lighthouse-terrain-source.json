@@ -1,0 +1,154 @@
+{
+  "generatedAt": "2026-09-06T22:46:37.257657+00:00",
+  "source": {
+    "agency": "U.S. Geological Survey",
+    "program": "3D Elevation Program (3DEP)",
+    "service": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer",
+    "serviceDescription": "The USGS 3D Elevation Program (3DEP) Bare Earth DEM Dynamic service is based on multi-resolution USGS DEM sources and provides dynamic functions for visualization. These functions include: Hillshade, Aspect Map, Hillshade Stretched, Multi-directional Hillshade, Slope Map, Elevation Tinted Hillshade, Contour. In addition the OGC Web Map Service (WMS) and Web Coverage Service (WCS) interfaces are enabled. Data available in this map service reflects all 3DEP DEM data published as of August 24, 2026.",
+    "servicePixelType": "F32",
+    "catalogRecord": {
+      "OBJECTID": 126361,
+      "Name": "WI_SEWRPC_2017",
+      "MinPS": 0,
+      "MaxPS": 10,
+      "LowPS": 1,
+      "HighPS": 16,
+      "Category": 1,
+      "Tag": "Dataset",
+      "GroupName": "",
+      "ProductName": "USGS_3DEP",
+      "CenterX": -9787283.264407473,
+      "CenterY": 5317150.674350836,
+      "ZOrder": null,
+      "Shape_Length": 54820.22076322349,
+      "Shape_Area": 187827930.71253565,
+      "Dataset_ID": "usgs",
+      "Best": 100065,
+      "DEM_Type": 1,
+      "Source": "USGS",
+      "VerticalDatum": "North American Vertical Datum of 1988 (NAVD 88)",
+      "AcquisitionDate": 1423008000000,
+      "URL": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1m/Projects/WI_SEWRPC_2017/TIFF/USGS_one_meter_x42y477_WI_SEWRPC_2017.tif",
+      "Metadata": "D:\\USGS_3DEP\\data\\1m\\WI_SEWRPC_2017\\USGS_one_meter_x42y477_WI_SEWRPC_2017.xml",
+      "pubdate": 20200330,
+      "title": "USGS one meter x42y477 WI SEWRPC 2017",
+      "Resolution_X": null,
+      "Resolution_Y": null,
+      "Cdate": null,
+      "StartDate": 20150324,
+      "EndDate": "20150402"
+    },
+    "nativeSourceResolutionM": 1.0,
+    "verticalDatum": "North American Vertical Datum of 1988 (NAVD 88)",
+    "elevationUnit": "meter"
+  },
+  "export": {
+    "request": {
+      "f": "json",
+      "bbox": "-9782191.411504,5321554.198957,-9781336.348511,5322387.900739",
+      "bboxSR": 3857,
+      "imageSR": 3857,
+      "size": "125,121",
+      "format": "tiff",
+      "pixelType": "F32",
+      "interpolation": "RSP_BilinearInterpolation",
+      "adjustAspectRatio": "false",
+      "mosaicRule": "{\"mosaicMethod\":\"esriMosaicLockRaster\",\"lockRasterIds\":[126361],\"mosaicOperation\":\"MT_FIRST\"}"
+    },
+    "response": {
+      "href": "https://elevation.nationalmap.gov/arcgis/rest/directories/elevation_output/3DEPElevation_ImageServer/_ags_62ae65f3_87b2_475a_b854_ef1757a0703a.tif",
+      "width": 125,
+      "height": 121,
+      "extent": {
+        "xmin": -9782191.411504,
+        "ymin": 5321554.198957,
+        "xmax": -9781336.348511,
+        "ymax": 5322387.900739,
+        "spatialReference": {
+          "wkid": 102100,
+          "latestWkid": 3857
+        }
+      },
+      "scale": 0
+    },
+    "note": "The response href is temporary; the catalog record URL is the stable source reference.",
+    "resampling": "bilinear",
+    "requestedGroundGridSpacingM": 5.0,
+    "webMercatorPixelSizeM": {
+      "x": 6.840503940820694,
+      "y": 6.890097376105398
+    }
+  },
+  "sceneProjection": {
+    "origin": {
+      "lat": 43.035,
+      "lon": -87.905
+    },
+    "mPerDegLat": 110574.0,
+    "mPerDegLon": 81367.90195302747,
+    "lakeDatumM": 176.5
+  },
+  "patch": {
+    "binaryFormat": "MKET: magic[4], uint32 nx, uint32 ny, float32 x0, float32 y0, float32 step, float32 heights[nx*ny], uint8 rgb[nx*ny*3]; little-endian",
+    "dimensions": {
+      "nx": 125,
+      "ny": 121
+    },
+    "worldBounds": {
+      "xMin": 2450.0,
+      "xMax": 3070.0,
+      "zMin": -3690.0,
+      "zMax": -3090.0
+    },
+    "northingBounds": {
+      "yMin": 3090.0,
+      "yMax": 3690.0
+    },
+    "geographicBounds": {
+      "west": -87.8748898467185,
+      "south": 43.062945086548375,
+      "east": -87.8672701344595,
+      "north": 43.06837131694611
+    },
+    "gridSpacingM": 5.0,
+    "rowOrder": "south-to-north (ascending northing; scene z decreases)",
+    "heightReference": "meters relative to project lake datum 176.5 m",
+    "absoluteElevationRangeM": {
+      "min": 176.6710968017578,
+      "max": 209.17388916015625
+    },
+    "heightAboveLakeRangeM": {
+      "min": 0.1710968017578125,
+      "max": 32.67388916015625
+    },
+    "finiteValues": 15125,
+    "samples": {
+      "northPointLighthouse": {
+        "lon": -87.8714176,
+        "lat": 43.0656749,
+        "world": {
+          "x": 2732.5294305473685,
+          "z": -3391.8463926001173
+        },
+        "absoluteElevationM": 203.21392822265625,
+        "heightAboveLakeDatumM": 26.713899612426758
+      },
+      "eastLowGround": {
+        "world": {
+          "x": 2925.0,
+          "z": -3392.0
+        },
+        "absoluteElevationM": 180.1055145263672,
+        "heightAboveLakeDatumM": 3.6055026054382324
+      }
+    },
+    "output": "web/public/data/lighthouse-terrain.bin",
+    "byteLength": 105899
+  },
+  "limitations": [
+    "The 5 m output grid is a bilinear resampling of the identified 1 m bare-earth DEM; it does not add detail beyond the source.",
+    "The source is a bare-earth DEM, so buildings, trees, curbs, and other surface objects are intentionally absent.",
+    "The source reports the hydro-flattened Lake Michigan surface near 176.7 m; the integration layer must reapply the project's mapped lake-bed mask below scene y=0.",
+    "The project uses a local equirectangular scene projection; the ArcGIS export uses EPSG:3857 only as an aligned transport raster."
+  ]
+}
