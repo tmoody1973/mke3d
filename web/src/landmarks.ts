@@ -1,3 +1,5 @@
+import { buildSaintKate } from './saintKate';
+import { SAINT_KATE_SITE } from './saintKateSite';
 import { buildMarcusCampus } from './marcusCampus';
 import { MARCUS_SITE, PECK_SITE } from './marcusSite';
 import { buildPabstTheater } from './pabstTheater';
@@ -41,6 +43,7 @@ export interface Landmark {
   interpretive?: boolean; focusHeight?: number; /** camera: distance (m), azimuth (deg from north, clockwise), elevation (deg) */ view: [number, number, number]; labelHeight: number;
 }
 export const LANDMARKS: Landmark[] = [
+  {id:'saintkate',name:'Saint Kate – The Arts Hotel',lat:SAINT_KATE_SITE.lat,lon:SAINT_KATE_SITE.lon,osm:'way/69020648',view:[135,35,24],labelHeight:41,focusHeight:17,interpretive:true,blurb:'The arts hotel on Kilbourn Avenue, with red-brick guest-room floors, pale arched window bands, a glazed entrance and red neon signs. The building follows its mapped footprint; architectural detail and lighting are interpreted from reference photographs.'},
   {id:'marcus',name:'Marcus Performing Arts Center',lat:MARCUS_SITE.lat,lon:MARCUS_SITE.lon,osm:'way/68762980',view:[215,125,30],labelHeight:35,focusHeight:14,interpretive:true,blurb:'The performing arts campus on Water Street: sculptural stone halls, a glazed public entrance, colored facade lighting, Peck Pavilion and landscaped community grounds. The north parking structure connects across State Street by skywalk. Details are interpreted from photographs and mapped footprints.'},
   {id:'peck',name:'Peck Pavilion',lat:PECK_SITE.lat,lon:PECK_SITE.lon,osm:'way/599981655',view:[85,125,18],labelHeight:12,focusHeight:4,interpretive:true,blurb:'The Marcus Center’s outdoor riverfront stage, with an open roof structure, fixed seating, and an adjoining lawn, honey locusts, cafe tables and public paths.'},
   {id:'pabst',name:'Pabst Theater',lat:PABST_SITE.lat,lon:PABST_SITE.lon,osm:'way/68649538',view:[105,155,18],labelHeight:32,focusHeight:13,interpretive:true,blurb:'Otto Strack’s 1895 theater on Wells Street. Ornamental brick and stone, a raised entrance pavilion, iron porch, balcony and dark mansard roof define this historic facade. The footprint is mapped; decorative details and heights are photo-based estimates.'},
@@ -122,7 +125,7 @@ export function buildInterpretive(manifest: Manifest, geo: LandmarkGeo, groundAt
   g.add(buildSummerfest(groundAt),buildDiscoveryWorld(groundAt),buildPortMilwaukee(groundAt),buildNewMuseumCampus(groundAt));
   g.add(buildCouture(groundAt));
   g.add(buildNM(groundAt), buildUsBankCampus(groundAt));
-  g.add(buildMarcusCampus(groundAt));
+  g.add(buildMarcusCampus(groundAt),buildSaintKate(groundAt));
   g.add(buildTurnerHall(groundAt), buildPabstTheater(groundAt), buildRiversideTheater(groundAt));
   g.add(buildFiserv(groundAt), buildDeerDistrict(groundAt), buildDeerDistrictBuildings(groundAt));
   const market = buildPublicMarket(groundAt); addPublicMarketSign(market); g.add(market);

@@ -169,3 +169,7 @@ Both theaters now have detailed exterior models, landmark labels and walking des
 ### Marcus Center campus
 
 The Marcus Performing Arts Center, Peck Pavilion, north parking garage and State Street skywalk now share a detailed campus model. Public grounds include the current lawn, trees, rain gardens, cafe furniture and memorial corner; night mode lights the stone facade, entrance, pavilion and garage. [Campus review](https://mke3d.vercel.app/marcus-review.html). See `docs/marcus-reference.md` for references and modeling limits.
+
+### Saint Kate
+
+Saint Kate – The Arts Hotel now has a mapped exterior model with brick guest-room floors, arched stone window bands, detailed Kilbourn entrance and red neon signage. It is included in walking, tours and day/sunset/night lighting. [Hotel review](https://mke3d.vercel.app/saint-kate-review.html). References and scope are recorded in `docs/saint-kate-reference.md`.
