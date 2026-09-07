@@ -42,3 +42,35 @@ test('museum perimeter streetlights follow day, sunset, and night lighting modes
  campus.userData.setLightingMode('sunset');const sunsetOpacity=(pools.material as THREE.MeshBasicMaterial).opacity;assert.equal(pools.visible,true);assert.ok(sunsetOpacity>0);assert.ok(glow.emissiveIntensity>0);
  campus.userData.setLightingMode('night');assert.equal(campus.userData.lightingMode,'night');assert.equal(pools.visible,true);assert.ok((pools.material as THREE.MeshBasicMaterial).opacity>sunsetOpacity);assert.ok(glow.emissiveIntensity>1);
 });
+
+
+test('published site-plan landscape connects Vliet to McKinley and renders upward on varying terrain',()=>{
+ const ground=(x:number,z:number)=>NEW_MUSEUM_SITE.floor+.005*(x+1100)+.003*(z+1480);
+ const campus=buildNewMuseumCampus(ground);
+ const path=campus.userData.gardenPath as [number,number][];
+ assert.ok(path[0]![1]<-1475,'north path reaches the Vliet edge');
+ assert.ok(path.at(-1)![1]>-1355,'south path reaches McKinley');
+ for(let i=1;i<path.length;i++)assert.ok(Math.hypot(path[i]![0]-path[i-1]![0],path[i]![1]-path[i-1]![1])<3,'walk has no disconnected sections');
+ const paths=campus.getObjectByName('museum-connected-garden-paths') as THREE.Mesh;
+ assert.ok(paths);
+ const positions=paths.geometry.getAttribute('position'),normals=paths.geometry.getAttribute('normal');
+ for(let i=0;i<positions.count;i++){
+  assert.ok(normals.getY(i)>.9,'walk paving faces the sky');
+  assert.ok(Math.abs(positions.getY(i)-ground(positions.getX(i),positions.getZ(i))-.09)<.02,'paving follows local terrain');
+ }
+ assert.ok(campus.userData.plantCount>100,'source plan has substantial perimeter planting');
+ assert.ok(campus.userData.treePositions.length>=20,'landscape includes street rows and garden trees');
+});
+
+test('north garage and garden boardwalk occupy distinct areas clear of the main museum',()=>{
+ const campus=buildNewMuseumCampus(()=>NEW_MUSEUM_SITE.floor);
+ const garage=campus.userData.garage as {x:number,z:number,width:number,depth:number,height:number};
+ const boardwalk=campus.userData.boardwalk as [number,number][];
+ assert.ok(garage.z+garage.depth/2<NEW_MUSEUM_SITE.z-NEW_MUSEUM_SITE.buildingDepth/2);
+ assert.ok(garage.height>8&&garage.height<15,'garage remains subordinate to the museum with three open parking levels');
+ assert.ok(campus.getObjectByName('museum-parking-garden-screen'));
+ assert.ok(campus.getObjectByName('museum-parking-vliet-banners'));
+ assert.equal(campus.getObjectByName('museum-north-cafe-wing'),undefined);
+ for(const [x,z] of boardwalk){assert.ok(x<garage.x-garage.width/2);assert.ok(z<NEW_MUSEUM_SITE.z-NEW_MUSEUM_SITE.buildingDepth/2);}
+ assert.ok(campus.getObjectByName('museum-rain-garden-basin'));
+});

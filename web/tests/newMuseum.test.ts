@@ -7,11 +7,11 @@ import {buildNewMuseum} from '../src/newMuseum.ts';
 // fitted site envelope. Ray directions below are physical street directions.
 function sitePoint(m:THREE.Group,x:number,y:number,z:number){
  const t=m.userData.authoredTransform as {center:number[];size:number[];width:number;depth:number;height:number};
- return new THREE.Vector3((-z-t.center[0])*t.width/t.size[0],(y-t.center[1]+t.size[1]/2)*t.height/t.size[1],(x-t.center[2])*t.depth/t.size[2]);
+ return new THREE.Vector3((x-t.center[0])*t.width/t.size[0],(y-t.center[1]+t.size[1]/2)*t.height/t.size[1],(z-t.center[2])*t.depth/t.size[2]);
 }
 function surfaces(m:THREE.Group){return {stone:m.getObjectByName('BLDG')!,glass:m.getObjectByName('new-museum-canyon-scoops-and-slots')!};}
-function fromSixth(m:THREE.Group,along:number,height:number){return new THREE.Raycaster(sitePoint(m,along,height,60),new THREE.Vector3(1,0,0));}
-function fromNorth(m:THREE.Group,eastward:number,height:number){return new THREE.Raycaster(sitePoint(m,-60,height,eastward),new THREE.Vector3(0,0,1));}
+function fromSouth(m:THREE.Group,x:number,y:number){return new THREE.Raycaster(sitePoint(m,x,y,60),new THREE.Vector3(0,0,-1));}
+function fromSixth(m:THREE.Group,z:number,y:number){return new THREE.Raycaster(sitePoint(m,-60,y,z),new THREE.Vector3(1,0,0));}
 
 test('future museum is finite, centered at grade, and within its render budget',()=>{
  const museum=buildNewMuseum(),bounds=new THREE.Box3().setFromObject(museum),center=new THREE.Vector3();bounds.getCenter(center);
@@ -21,22 +21,22 @@ test('future museum is finite, centered at grade, and within its render budget',
  assert.deepEqual(museum.userData.dimensions,{width:52,depth:60,height:30.48});
 });
 
-test('custom dimensions scale the complete rotated museum envelope',()=>{
+test('custom dimensions scale the complete museum envelope',()=>{
  const museum=buildNewMuseum({width:82,depth:66,height:40}),bounds=new THREE.Box3().setFromObject(museum),size=new THREE.Vector3();bounds.getSize(size);
  assert.deepEqual(museum.userData.dimensions,{width:82,depth:66,height:40});
  assert.ok(Math.abs(size.x-82)<.02&&Math.abs(size.z-66)<.02&&Math.abs(size.y-40)<.02);
 });
 
-test('three principal masses occupy northwest, southwest and northeast with a taller northwest roof',()=>{
+test('three principal masses occupy southwest, southeast and northwest with a taller southwest roof',()=>{
  const m=buildNewMuseum(),{stone}=surfaces(m);
  const centers=[sitePoint(m,-19,60,11),sitePoint(m,18,60,11),sitePoint(m,-18,60,-20)];
- assert.ok(centers[0].x<0&&centers[0].z<0,'main bluff is northwest');
- assert.ok(centers[1].x<0&&centers[1].z>0,'short bluff is southwest');
- assert.ok(centers[2].x>0&&centers[2].z<0,'rear bluff is northeast');
+ assert.ok(centers[0].x<0&&centers[0].z>0,'main bluff is southwest');
+ assert.ok(centers[1].x>0&&centers[1].z>0,'short bluff is southeast');
+ assert.ok(centers[2].x<0&&centers[2].z<0,'rear bluff is northwest');
  const roofs=centers.map(p=>new THREE.Raycaster(p,new THREE.Vector3(0,-1,0)).intersectObject(stone)[0]);
  assert.ok(roofs.every(Boolean),'each principal mass has a roof');
- assert.ok(roofs[0].point.y>roofs[1].point.y+5&&roofs[0].point.y>roofs[2].point.y+4,'northwest roof dominates both neighboring masses');
- assert.ok(!new THREE.Raycaster(sitePoint(m,18,60,-20),new THREE.Vector3(0,-1,0)).intersectObject(stone)[0],'southeast quadrant stays open instead of becoming a fourth block');
+ assert.ok(roofs[0].point.y>roofs[1].point.y+5&&roofs[0].point.y>roofs[2].point.y+4,'southwest roof dominates both neighboring masses');
+ assert.ok(new THREE.Raycaster(sitePoint(m,18,60,-20),new THREE.Vector3(0,-1,0)).intersectObject(stone)[0],'connected eastern wing occupies the northeast floor area shown in the site plan');
 });
 
 test('canyon interior and facade lighting switch off in daylight',()=>{
@@ -47,70 +47,66 @@ test('canyon interior and facade lighting switch off in daylight',()=>{
  museum.userData.setLightingMode('day');assert.ok(!glow.visible&&lights.every(l=>l.intensity===0));
 });
 
-test('northwest Commons glazing is open from Sixth Street and the northern garden',()=>{
+// The supplied south elevation is the authority for these regression probes.
+// +Z faces McKinley; -X faces Sixth Street, independently of camera labels.
+test('McKinley entrance is between the tall western and lower eastern masses',()=>{
  const m=buildNewMuseum(),{stone,glass}=surfaces(m);
- for(const ray of [fromSixth(m,-25,2),fromSixth(m,-20,2),fromNorth(m,11,2),fromNorth(m,20,2)]){
-  assert.ok(ray.intersectObjects([stone,glass])[0]?.object===glass,'Commons glazing is visible without a stone wall in front');
- }
- for(const ray of [fromSixth(m,-25,8),fromNorth(m,11,8)])assert.ok(ray.intersectObjects([stone,glass])[0]?.object===stone,'stone overhang remains above Commons');
- assert.ok(fromNorth(m,-20,2).intersectObjects([stone,glass])[0]?.object===stone,'rear northeast volume does not inherit a full Commons glass skirt');
+ const west=fromSouth(m,-19,10).intersectObject(stone)[0],east=fromSouth(m,18,10).intersectObject(stone)[0];
+ const entry=fromSouth(m,0,10).intersectObjects([stone,glass])[0];
+ assert.ok(west&&east&&entry?.object===glass,'south stone masses flank the glass entrance');
+ assert.ok(entry.point.z<west.point.z-1&&entry.point.z<east.point.z-1,'entry is recessed');
+ assert.ok(fromSouth(m,0,2).intersectObjects([stone,glass])[0]?.object===glass);
 });
 
-test('Commons has a level head and one descending closure before the entrance pier',()=>{
+test('McKinley blue opening belongs to the left mass with a separate right glass scoop',()=>{
+ const m=buildNewMuseum(),{stone,glass}=surfaces(m),blue=m.getObjectByName('new-museum-blue-entry-installation')!;
+ assert.ok(fromSouth(m,-23,2).intersectObjects([stone,glass,blue])[0]?.object===blue,'blue installation in western mass');
+ assert.ok(fromSouth(m,27,2).intersectObjects([stone,glass])[0]?.object===glass,'localized eastern ground scoop');
+ assert.ok(fromSouth(m,15,2).intersectObjects([stone,glass])[0]?.object===stone,'solid right pier beside entrance');
+ assert.ok(fromSixth(m,17,2).intersectObjects([stone,glass,blue])[0]?.object===stone,'Sixth pier separates cafeteria and blue installation');
+});
+
+test('McKinley asymmetric slots sit at separate heights',()=>{
  const m=buildNewMuseum(),{stone,glass}=surfaces(m);
- for(const along of [-30,-25,-20]){
-  assert.ok(fromSixth(m,along,4.3).intersectObjects([stone,glass])[0]?.object===glass,'level run remains glazed below its soffit');
-  assert.ok(fromSixth(m,along,4.9).intersectObjects([stone,glass])[0]?.object===stone,'stone resumes above the level soffit');
+ for(const [x,y] of [[-28,23],[-18,6.6],[-11,10.6],[25,15.5],[18,21.3],[21,24.3]]){
+  assert.ok(fromSouth(m,x,y).intersectObjects([stone,glass])[0]?.object===glass,`south slot at ${x}, ${y}`);
  }
- const tops=[-20,-17,-14,-11,-8].map(along=>{
-  let low=0,high=5;
-  for(let i=0;i<12;i++){
-   const y=(low+high)/2;
-   if(fromSixth(m,along,y).intersectObjects([stone,glass])[0]?.object===glass)low=y;else high=y;
-  }
+ assert.ok(fromSouth(m,-19,18).intersectObjects([stone,glass])[0]?.object===stone);
+ assert.ok(fromSouth(m,12,15.5).intersectObjects([stone,glass])[0]?.object===stone);
+});
+
+test('Sixth Street cafeteria closes once before McKinley corner',()=>{
+ const m=buildNewMuseum(),{stone,glass}=surfaces(m);
+ for(const z of [-2,0,2]){
+  assert.ok(fromSixth(m,z,5.2).intersectObjects([stone,glass])[0]?.object===glass,'level cafeteria head');
+  assert.ok(fromSixth(m,z,6.1).intersectObjects([stone,glass])[0]?.object===stone,'stone soffit');
+ }
+ const tops=[2,4,6,8,10,13].map(z=>{
+  let low=0,high=6;
+  for(let i=0;i<12;i++){const y=(low+high)/2;if(fromSixth(m,z,y).intersectObjects([stone,glass])[0]?.object===glass)low=y;else high=y;}
   return low;
  });
- assert.ok(tops[0]>4.5&&tops.at(-1)!<.1,'glass descends from the level head to grade');
- tops.slice(1).forEach((top,i)=>assert.ok(top<=tops[i]+.01,'closure does not dip and rise'));
- assert.ok(fromSixth(m,-8,2).intersectObjects([stone,glass])[0]?.object===stone,'solid pier separates Commons from entry canyon');
+ assert.ok(tops[0]>5.5&&tops.at(-1)!<.1);
+ tops.slice(1).forEach((top,i)=>assert.ok(top<=tops[i]+.01,'no dip-and-rise arc'));
+ for(const z of [14,17,20])assert.ok(fromSixth(m,z,2).intersectObjects([stone,glass])[0]?.object===stone);
 });
 
-test('northwest upper window is recessed and leaves a solid entrance-side pier',()=>{
+test('west gallery window is recessed and leaves southwest pier solid',()=>{
  const m=buildNewMuseum(),{stone,glass}=surfaces(m),recess=m.getObjectByName('new-museum-real-window-recesses')!;
- const slot=fromSixth(m,-25,17.5),pane=slot.intersectObject(glass)[0],reveal=slot.intersectObject(recess)[0];
- const below=fromSixth(m,-25,15.5).intersectObject(stone)[0],above=fromSixth(m,-25,21).intersectObject(stone)[0];
- assert.ok(pane&&reveal&&below&&above,'window has stone boundaries and an interior reveal');
- assert.ok(pane.point.x>below.point.x+.2&&reveal.point.x>pane.point.x,'window and reveal sit behind the west wall');
- assert.ok(slot.intersectObjects([stone,glass])[0]?.object===glass,'stone is actually cut away at the slot');
- assert.ok(fromSixth(m,-8,17.5).intersectObjects([stone,glass])[0]?.object===stone,'slot ends before the entrance-side pier');
+ const ray=fromSixth(m,3,17.5),pane=ray.intersectObject(glass)[0],reveal=ray.intersectObject(recess)[0],below=fromSixth(m,3,15).intersectObject(stone)[0];
+ assert.ok(pane&&reveal&&below&&ray.intersectObjects([stone,glass])[0]?.object===glass);
+ assert.ok(pane.point.x>below.point.x+.2&&reveal.point.x>pane.point.x);
+ assert.ok(fromSixth(m,20,17.5).intersectObjects([stone,glass])[0]?.object===stone);
 });
 
-test('southwest local window remains recessed with stone beside and above it',()=>{
+test('McKinley canyon seals both stone edges at sampled heights',()=>{
  const m=buildNewMuseum(),{stone,glass}=surfaces(m);
- const pane=fromSixth(m,25,15.5).intersectObject(glass)[0],above=fromSixth(m,25,17.5).intersectObject(stone)[0];
- assert.ok(pane&&above&&pane.point.x>above.point.x+.2,'localized pane is recessed inside rounded stone');
- assert.ok(fromSixth(m,18,15.5).intersectObjects([stone,glass])[0]?.object===stone,'window does not become a continuous floor belt');
-});
-
-test('Sixth Street entry canyon is glazed between two projecting stone lobes',()=>{
- const m=buildNewMuseum(),{stone,glass}=surfaces(m);
- const north=fromSixth(m,-20,10).intersectObject(stone)[0],south=fromSixth(m,18,10).intersectObject(stone)[0];
- const entry=fromSixth(m,0,10).intersectObjects([stone,glass])[0];
- assert.ok(north&&south&&entry?.object===glass,'two west-facing stone lobes flank the glass entrance');
- assert.ok(entry.point.x>north.point.x+1&&entry.point.x>south.point.x+1,'canyon is recessed east of both street faces');
- assert.ok(fromSixth(m,0,2).intersectObjects([stone,glass])[0]?.object===glass,'entrance stays clear at ground level');
-});
-
-test('tapered Sixth Street canyon seals both stone edges at sampled heights',()=>{
- const m=buildNewMuseum(),{stone,glass}=surfaces(m);
- const seams=m.userData.canyonSeams as {y:number;left:number;right:number;x:number}[];
- assert.ok(seams[0].right-seams[0].left>seams.at(-1)!.right-seams.at(-1)!.left,'connector widens toward the entrance');
- for(let i=1;i<seams.length-1;i+=4){
-  const s=seams[i];
+ const seams=m.userData.canyonSeams as {y:number;left:number;right:number;z:number}[];
+ assert.ok(seams[0].right-seams[0].left>seams.at(-1)!.right-seams.at(-1)!.left);
+ for(let i=1;i<seams.length-1;i+=4){const s=seams[i];
   for(const edge of [s.left,s.right])for(const delta of [-.25,0,.25]){
-   const ray=new THREE.Raycaster(new THREE.Vector3(-60,s.y,edge+delta),new THREE.Vector3(1,0,0));
-   const hit=ray.intersectObjects([stone,glass])[0];
-   assert.ok(hit&&hit.point.x<=s.x+.1,`unsealed west canyon edge at y=${s.y}, z=${edge+delta}`);
+   const hit=new THREE.Raycaster(new THREE.Vector3(edge+delta,s.y,60),new THREE.Vector3(0,0,-1)).intersectObjects([stone,glass])[0];
+   assert.ok(hit&&hit.point.z>=s.z-.1,`unsealed south edge y=${s.y}, x=${edge+delta}`);
   }
  }
 });

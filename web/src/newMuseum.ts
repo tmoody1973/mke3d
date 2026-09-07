@@ -37,28 +37,41 @@ function volumeWall(l:MuseumVolume,low:number,high:number,offset=0,opening=false
   const x=l.x+p.x,z=l.z+p.y,y=(low+high)/2;
   let value=low;
   if(l.kind===0){
-   // Northwest cafeteria: north face and rounded corner stay level. On the
-   // Sixth Street face the soffit rolls down once, leaving a solid south pier.
-   const northFace=segment.x<-l.w/2+l.r;
-   const streetFace=segment.y>l.d/2-l.r;
-   if(northFace&&z>-4)value=Math.max(value,4.6);
-   if(streetFace&&x<-8){
-    const t=THREE.MathUtils.clamp((x+19)/11,0,1);
-    value=Math.max(value,4.6*Math.sqrt(Math.max(0,1-t*t)));
+   // The cafeteria opening crosses the NORTHWEST corner of this main lobe:
+   // level across the north face, then one downward return on Sixth Street.
+   // A substantial stone pier separates it from the southern planetarium.
+   const northFace=segment.y<-l.d/2+l.r&&segment.x<0;
+   const westFace=segment.x<-l.w/2+l.r;
+   if(northFace||westFace&&z<12){
+    const t=THREE.MathUtils.clamp((z-2)/10,0,1);
+    value=Math.max(value,5.8*(z<=2?1:Math.sqrt(Math.max(0,1-t*t))));
    }
-   // A single recessed window turns the northwest corner. It ends before
-   // the southern pier instead of becoming a continuous horizontal belt.
-   if(y>=16.6&&y<=19.05&&((northFace&&z>17)||(streetFace&&x<-12)))value=high;
+   // McKinley has a separate, opaque blue-tile planetarium scoop. Its
+   // return is limited to the southwest radius, never a west glass skirt.
+   const westCornerX=l.x-l.w/2+l.r;
+   const segmentX=l.x+segment.x;
+   if(segmentX<=westCornerX&&z>22)
+    value=Math.max(value,5.8*THREE.MathUtils.smoothstep(z,22,26));
+   if(p.y>l.d/2-l.r&&x>=westCornerX&&x<-8)
+    value=Math.max(value,5.8*Math.sqrt(Math.max(0,1-((x-westCornerX)/(-8-westCornerX))**2)));
+   if(y>=16.6&&y<=19.05&&p.x<-l.w/2+1.8&&Math.abs(z-3)<12)value=high;
+   if(y>=16.6&&y<=19.05&&p.y<-l.d/2+1.8&&x<-18)value=high;
+   if(y>=16.6&&y<=19.05&&p.x<-l.w/2+l.r&&p.y<-l.d/2+l.r)value=high;
+   if(y>=22&&y<=24&&p.y>l.d/2-1.8&&x<-24)value=high;
+   if(y>=6.4&&y<=7&&p.y>l.d/2-.6&&x>-21&&x<-15)value=high;
+   if(y>=6.4&&y<=7&&p.x<-l.w/2+.6&&z>10&&z<18)value=high;
+   if(y>=24&&y<=24.65&&p.x<-l.w/2+.6&&z>1&&z<11)value=high;
    if(y>=10.3&&y<=10.95&&p.y>l.d/2-.6&&x>-14&&x<-8)value=high;
   }else if(l.kind===1){
-   if(p.x>l.w/2-1&&Math.abs(z-11)<12)value=Math.max(value,4.6*Math.sqrt(Math.max(0,1-((z-11)/12)**2)));
    if(p.y>l.d/2-2&&x>15)value=Math.max(value,5.5*Math.sqrt(Math.max(0,1-((34-x)/19)**2)));
    if(y>=14.7&&y<=16.7&&p.y>l.d/2-3&&x>19)value=high;
-   if(y>=21&&y<=21.65&&p.y>l.d/2-.6&&x>11&&x<24)value=high;
+   if(y>=21&&y<=21.65&&p.y>l.d/2-2&&x>7&&x<22)value=high;
+   if(y>=24&&y<=24.65&&p.y>l.d/2-.6&&x>17&&x<25)value=high;
   }else if(l.kind===2){
    // Separate northwest lobe beside the garden, with a low glazed Commons.
    if(p.y< -l.d/2+l.r&&x< -16)value=Math.max(value,4.2);
    if(y>=14.7&&y<=16.6&&p.x<-l.w/2+1.2&&z<-17)value=high;
+   if(y>=21&&y<=21.65&&p.x<-l.w/2+.6&&z>-24&&z<-19)value=high;
   }else if(l.kind===3){
    if(y>=30.3&&y<=31&&p.y>l.d/2-.5&&x>-21&&x<-12)value=high;
    if(y>=30.3&&y<=31&&p.x<-l.w/2+.5&&z>-5&&z<4)value=high;
@@ -81,8 +94,8 @@ function volumeWall(l:MuseumVolume,low:number,high:number,offset=0,opening=false
 }
 
 /** Future Milwaukee Public Museum visualization, centered at grade zero.
- * Finished local -X faces Sixth Street; +Z faces McKinley. Volume profiles
- * are authored with the entrance at +Z, then rotated onto the mapped site.
+ * Local -X faces Sixth Street; +Z faces McKinley. The tall southwest and
+ * short southeast masses frame the McKinley entrance, as in the south rendering.
  */
 export function buildNewMuseum(options:NewMuseumOptions={}):THREE.Group{
   const width=options.width??52,depth=options.depth??60,height=options.height??30.48,sx=width/68,sz=depth/60,sy=height/34;
@@ -102,16 +115,18 @@ export function buildNewMuseum(options:NewMuseumOptions={}):THREE.Group{
   const entryInfill:THREE.BufferGeometry[]=[];
   const shell:THREE.BufferGeometry[]=[],bands:THREE.BufferGeometry[]=[],recesses:THREE.BufferGeometry[]=[],glass:THREE.BufferGeometry[]=[],frames:THREE.BufferGeometry[]=[],roof:THREE.BufferGeometry[]=[],planters:THREE.BufferGeometry[]=[],shrubs:THREE.BufferGeometry[]=[],glow:THREE.BufferGeometry[]=[];
 
-  // Three principal masses, with the highest western lobe stepping back above
+  // Connected east wing reaches the northeast rear of the footprint; its
+  // occupied floor area is not an empty fourth quadrant. Three roof fields
+  // and a planted south terrace articulate it. The highest western lobe steps above
   // a planted shoulder. The step occurs near the roof, not halfway up the wall.
   const volumes:MuseumVolume[]=[
     {x:-19,z:11,w:30,d:36,r:7.8,low:0,high:26.8,kind:0},
-    {x:18,z:11,w:28,d:33,r:7.8,low:0,high:26.5,kind:1},
-    {x:-18,z:-20,w:24,d:26,r:6.5,low:0,high:23.4,kind:2},
-    {x:-20.5,z:10,w:27,d:32,r:7.8,low:26.8,high:34,kind:3},
-    {x:-19,z:-22,w:21,d:21,r:5.5,low:23.4,high:28,kind:4},
+    {x:18,z:-1.5,w:28,d:58,r:7.8,low:0,high:26.5,kind:1},
+    {x:-18,z:-23,w:24,d:26,r:6.5,low:0,high:23.4,kind:2},
+    {x:-19,z:10,w:27,d:32,r:7.8,low:26.8,high:34,kind:3},
+    {x:-19,z:-25,w:21,d:21,r:5.5,low:23.4,high:28,kind:4},
   ];
-  const levels=[0,8,10.3,10.95,14.7,16.6,16.7,19.05,21,21.65,23.4,26.5,26.8,30.3,31,34];
+  const levels=[0,6.4,7,8,10.3,10.95,14.7,16.6,16.7,19.05,21,21.65,22,23.4,24,24.65,26.5,26.8,30.3,31,34];
   for(const l of volumes){
     const cuts=[l.low,...levels.filter(y=>y>l.low&&y<l.high),l.high];
     for(let i=0;i<cuts.length-1;i++){
@@ -132,10 +147,10 @@ export function buildNewMuseum(options:NewMuseumOptions={}):THREE.Group{
           }
           const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(soffit,3));g.computeVertexNormals();shell.push(g);outer.dispose();
         }
-        if(l.kind===1&&cuts[i]===0){
+        if(l.kind===0&&cuts[i]===0){
           const n=pane.getAttribute('normal'),blue:number[]=[];
-          for(let j=0;j<p.count;j+=3)if([0,1,2].every(k=>n.getX(j+k)>.8)){
-            for(let k=0;k<3;k++)blue.push(p.getX(j+k)+.045,p.getY(j+k),p.getZ(j+k));
+          for(let j=0;j<p.count;j+=3)if([0,1,2].every(k=>p.getZ(j+k)>21&&n.getZ(j+k)>.1)){
+            for(let k=0;k<3;k++)blue.push(p.getX(j+k),p.getY(j+k),p.getZ(j+k)+.06);
           }
           const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(blue,3));g.computeVertexNormals();entryInfill.push(g);
         }
@@ -156,10 +171,10 @@ export function buildNewMuseum(options:NewMuseumOptions={}):THREE.Group{
   // from the very same surface as the stone above; no rectangular panes protrude.
   // The Sixth Street elevation has two distinct rounded masses, separated by
   // a narrow glazed cleft. The previous long western block erased this gap.
-  glass.push(box(-18,12,-8.5,8,22,6));
-  recesses.push(box(-18,12,-8.5,5.8,22,1.4));
-  for(const y of [1,5,9,13,17,21,25])frames.push(box(-20.05,y,-8.5,.12,.12,4.1));
-  for(const z of [-10.45,-8.5,-6.55])frames.push(box(-20.05,13,z,.12,24,.09));
+  glass.push(box(-25,12,-8.5,3,22,6));
+  recesses.push(box(-24,12,-8.5,1,22,6));
+  for(const y of [1,5,9,13,17,21,25])frames.push(box(-26.55,y,-8.5,.12,.12,5.8));
+  for(const z of [-10.45,-8.5,-6.55])frames.push(box(-26.55,13,z,.12,24,.09));
   // Fit every curtain-wall edge to the actual stone surface. A constant-width
   // box leaves triangular gaps when the two surrounding lobes lean outward.
   const probeMaterial=new THREE.MeshBasicMaterial({side:THREE.DoubleSide});
@@ -192,14 +207,15 @@ export function buildNewMuseum(options:NewMuseumOptions={}):THREE.Group{
   }
   probeMaterial.dispose();
   // Terrace on the shoulder between the taller upper mass and the south face.
-  for(const [x,z,y,w,d] of [[-12,28,26.8,12,1.6],[-18,-8.5,23.4,15,2.4]]){
+  for(const [x,z,y,w,d] of [[-12,28,26.8,12,1.6],[-18,-11.5,23.4,15,2.4],[18,23,26.5,20,3]]){
     planters.push(box(x,y+.25,z,w,.5,d));
     for(let i=0;i<9;i++){const g=new THREE.IcosahedronGeometry(.65,1);g.scale(1,.8+(i%3)*.25,1);g.translate(x-w*.45+i*w*.9/8,y+.8,z+Math.sin(i*2.4)*.45);shrubs.push(g);}
   }
+  for(let i=0;i<7;i++){const g=new THREE.IcosahedronGeometry(.5,1);g.scale(1,.85,1);g.translate(-34,27.35,3+i*2.1);shrubs.push(g);}
   // Glazed rooftop commons behind the high western shoulder.
   glass.push(box(-8,26,-12,7,4,8));
   for(const side of [-1,1]){const g=new THREE.BoxGeometry(3.8,.14,8.4);g.rotateZ(side*.12);g.translate(-8+side*1.8,28.1,-12);glass.push(g);}
-  for(const [cx,cz,cy,nx,nz] of [[-21,10,34.15,5,8],[18,11,26.65,4,8],[-19,-22,28.15,4,5]] as const)
+  for(const [cx,cz,cy,nx,nz] of [[-21,10,34.15,5,8],[18,-14,26.65,4,8],[-19,-25,28.15,4,5]] as const)
     for(let ix=0;ix<nx;ix++)for(let iz=0;iz<nz;iz++)roof.push(box(cx+(ix-(nx-1)/2)*3.7,cy,cz+(iz-(nz-1)/2)*3,3.2,.12,2.5));
 
   merge(root,'new-museum-commons-interior',commons,commonsMat);
@@ -213,24 +229,22 @@ export function buildNewMuseum(options:NewMuseumOptions={}):THREE.Group{
   merge(root,'new-museum-terrace-planters',planters,planterMat);
   merge(root,'new-museum-terrace-shrubs',shrubs,shrubMat);
   const glowMesh=merge(root,'new-museum-canyon-interior-light',glow,glowMat)!;glowMesh.castShadow=false;
-  // The authored entrance elevation is +Z. Rotate it onto Sixth Street (-X),
-  // placing the high bluff northwest, the short bluff southwest and the rear
-  // bluff northeast, as in the architect's site plan. Fit AFTER this rotation.
-  root.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.rotateY(-Math.PI/2);});
+  // Keep the entrance on McKinley (+Z). Do not rotate this south elevation
+  // onto Sixth Street: the official south and northwest views are distinct.
   // Fit the complete architecture, including bands and roof equipment, to the caller's placement envelope.
   const rawBounds=new THREE.Box3().setFromObject(root),rawSize=new THREE.Vector3(),rawCenter=new THREE.Vector3();rawBounds.getSize(rawSize);rawBounds.getCenter(rawCenter);
   root.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.translate(-rawCenter.x,-rawBounds.min.y,-rawCenter.z);o.geometry.scale(width/rawSize.x,height/rawSize.y,depth/rawSize.z);o.geometry.computeBoundingBox();o.geometry.computeBoundingSphere();}});
   let drawCalls=0,triangles=0;root.traverse(o=>{if(o instanceof THREE.Mesh){drawCalls++;const p=o.geometry.getAttribute('position');triangles+=(o.geometry.index?.count??p.count)/3;}});
-  root.userData.canyonSeams=canyonRows.map(p=>({y:(p.y-rawBounds.min.y)*height/rawSize.y,left:(p.left-rawCenter.z)*depth/rawSize.z,right:(p.right-rawCenter.z)*depth/rawSize.z,x:(-canyonZ-rawCenter.x)*width/rawSize.x}));
+  root.userData.canyonSeams=canyonRows.map(p=>({y:(p.y-rawBounds.min.y)*height/rawSize.y,left:(p.left-rawCenter.x)*width/rawSize.x,right:(p.right-rawCenter.x)*width/rawSize.x,z:(canyonZ-rawCenter.z)*depth/rawSize.z}));
   root.userData.authoredTransform={center:rawCenter.toArray(),size:rawSize.toArray(),width,depth,height};
   root.userData.dimensions={width,depth,height};root.userData.drawCalls=drawCalls;root.userData.triangles=triangles;
-  root.userData.axes={westFront:'-X / Sixth Street entrance',southFront:'+Z / McKinley Avenue'};
+  root.userData.axes={westFront:'-X / Sixth Street',southFront:'+Z / McKinley Avenue entrance'};
   root.userData.features={lobes:3,entryCanyon:true,scoopedGroundGlazing:2,realMidheightRecesses:3,terraces:2,butterflyRoof:true};
   const facadeLights:THREE.SpotLight[]=[];
   for(const [x,z,tx,tz,color] of [[-46,8,-30,2,0xffdfb8],[-22,44,-19,28,0xf0f4ff],[23,44,18,28,0xf0f4ff]]){
     const light=new THREE.SpotLight(color,0,85,1.3,1,2);
     light.name='museum-soft-facade-wash';
-    light.position.set(-z*sx,1.3*sy,x*sz);light.target.position.set(-tz*sx,18*sy,tx*sz);root.add(light,light.target);facadeLights.push(light);
+    light.position.set(x*sx,1.3*sy,z*sz);light.target.position.set(tx*sx,18*sy,tz*sz);root.add(light,light.target);facadeLights.push(light);
   }
   root.userData.setLightingMode=(mode:Mode)=>{commonsMat.emissiveIntensity=mode==='night'?.35:mode==='sunset'?.18:0;stone.emissive.set(0x9caabe);bandMat.emissive.copy(stone.emissive);stone.emissiveIntensity=bandMat.emissiveIntensity=mode==='night'?.075:mode==='sunset'?.018:0;entryBlueMat.emissiveIntensity=mode==='night'?.8:mode==='sunset'?.3:0;facadeLights.forEach(light=>light.intensity=mode==='night'?2200:mode==='sunset'?750:0);glassMat.emissiveIntensity=mode==='night'?.19:mode==='sunset'?.07:0;glowMat.opacity=mode==='night'?.3:mode==='sunset'?.16:0;glowMesh.visible=glowMat.opacity>0;};
   root.userData.setLightingMode('day');return root;

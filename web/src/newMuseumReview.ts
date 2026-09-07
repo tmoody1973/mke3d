@@ -21,7 +21,7 @@ const views:Record<string,{eye:[number,number,number];target:[number,number,numb
  corner:{eye:[-55,5,65],target:[0,15,0]},
  entry:{eye:[0,2.5,84],target:[0,14,5]},
  sixth:{eye:[-85,3,-62],target:[0,14,0]},
- aerial:{eye:[-155,135,-180],target:[0,14,-25]},
+ aerial:{eye:[-115,90,-135],target:[0,14,-25]},
  garden:{eye:[-70,20,-100],target:[-15,8,-45]},
 };
 function view(key:string){const v=views[key];const damping=city.controls.enableDamping;city.controls.enableDamping=false;city.controls.update();city.camera.position.set(site.x+v.eye[0],site.floor+v.eye[1],site.z+v.eye[2]);city.controls.target.set(site.x+v.target[0],site.floor+v.target[1],site.z+v.target[2]);city.controls.update();city.controls.enableDamping=damping;document.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.angle===key)));}
