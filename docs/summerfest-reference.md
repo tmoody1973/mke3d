@@ -50,3 +50,9 @@ The corrected road surfaces also drive the street-light generator's final height
 ## Animated Skyglider
 
 The campus includes an animated two-lane Skyglider following cached OSM way 597941283, with low terminal turns and 94 colorful open double chairs. Review placement, photographic evidence, dated chair count, and estimated height in [skyglider-reference.md](skyglider-reference.md). The Skyglider route and terminal camera presets include pause/play; it also animates in the main city and respects reduced-motion preferences. Procedural tree placement leaves the cable corridor clear without removing mapped buildings.
+
+## Lakefront road connections
+
+The Summerfest review now includes the same custom Hoan Bridge and harbor context as the city. The tile pipeline omits the bridge corridor, so loading only the tiles left its approach roads without a continuation in this standalone view. Use **Freeway connections** and **North road connections** to inspect the network at natural height.
+
+The [City of Milwaukee’s executed Lakefront Gateway plan](https://city.milwaukee.gov/AreaPlans/Downtown/Milwaukee-Lakefront-Gateway-Project/Street-and-Highway-Development.htm) establishes the street connections: Lincoln Memorial Drive extends south to Chicago Street, Clybourn continues east toward Discovery World, and the I-794 service ramps connect at Lincoln Memorial Drive / Harbor Drive. The Harbor pedestrian and bicycle connection to Chicago Street is distinct from the vehicular ramp network. Cached OSM source ways establish the detailed roadway alignments; no new road is invented across the festival grounds. See [Hoan approach corrections](hoan-reference.md) for the restored carriageway geometry and vertical-profile limitations.

@@ -8,7 +8,7 @@
     "test": "node --test tests/*.test.ts",
     "dev": "vite",
     "build": "tsc && vite build",
-    "test:hoan": "node --test tests/hoan.test.ts tests/hoanLighting.test.ts tests/hoanSite.test.ts",
+    "test:hoan": "node --test tests/hoan.test.ts tests/hoanLighting.test.ts tests/hoanSite.test.ts tests/hoanApproaches.test.ts",
     "test:signs": "node --test tests/buildingSigns.test.ts",
     "test:tour": "node --test tests/tour.test.ts",
     "test:warmemorial": "node --test tests/warMemorial.test.ts",

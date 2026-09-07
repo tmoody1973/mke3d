@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { LandmarkGeo } from './landmarks';
 import { createHoanLighting, type HoanLightPath } from './hoanLighting.ts';
+import { hoanNorthboundJunctions } from './hoanApproachData.ts';
+import { buildHoanApproaches, withinHoanApproachMerge } from './hoanApproaches.ts';
 
 type HoanGeo = NonNullable<LandmarkGeo['hoan']>;
 
@@ -218,9 +220,32 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
   const endY0 = groundAt(source[0].x, source[0].y) + 14.1;
   const endY1 = groundAt(source[source.length - 1].x, source[source.length - 1].y) + 14.1;
   const mainY = Math.max(38, (h.deckHeightM || 36) + 2);
+  const sourceStation = (x: number, z: number) => {
+    let best = Infinity, station = 0;
+    for (let i = 1; i < source.length; i++) {
+      const a = source[i - 1], ab = source[i].clone().sub(a);
+      const t = THREE.MathUtils.clamp(new THREE.Vector2(x, z).sub(a).dot(ab) / ab.lengthSq(), 0, 1);
+      const distance = new THREE.Vector2(x, z).distanceToSquared(a.clone().addScaledVector(ab, t));
+      if (distance < best) { best = distance; station = cumulative[i - 1] + t * ab.length(); }
+    }
+    return station;
+  };
+  // These internal source branch elevations are immutable pipeline values: terrain
+  // repairs below the freeway must not move the deck away from its tile ramps.
+  const northAnchors = [
+    { station: mainEnd, y: mainY },
+    ...hoanNorthboundJunctions.map(([x, z, asphaltY]) => ({ station: sourceStation(x, z), y: asphaltY - .3 })),
+    { station: total, y: endY1 },
+  ].sort((a, b) => a.station - b.station);
+  const northBranchOpening = (station: number) => northAnchors.slice(1, -1).some(a => Math.abs(a.station - station) < 18);
   const yAt = (station: number) => {
     if (station <= mainStart) return THREE.MathUtils.lerp(endY0, mainY, smoothstep(station / Math.max(mainStart, 1)));
-    if (station >= mainEnd) return THREE.MathUtils.lerp(mainY, endY1, smoothstep((station - mainEnd) / Math.max(total - mainEnd, 1)));
+    if (station >= mainEnd) {
+      let i = 1;
+      while (i < northAnchors.length - 1 && northAnchors[i].station < station) i++;
+      const a = northAnchors[i - 1], b = northAnchors[i];
+      return THREE.MathUtils.lerp(a.y, b.y, smoothstep((station - a.station) / (b.station - a.station)));
+    }
     return mainY;
   };
   const frameAt = (station: number) => {
@@ -228,14 +253,14 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
     const a = planAt(Math.max(0, station - 1));
     const b = planAt(Math.min(total, station + 1));
     const tangent = b.sub(a).normalize();
-    const widthScale = THREE.MathUtils.lerp(1, 1.5, structureWeight(station));
+    const widthScale = THREE.MathUtils.lerp(station > mainEnd ? 11.52 / 21.5 : 1, 1.5, structureWeight(station));
     return {
       center: new THREE.Vector3(p.x, yAt(station), p.y),
       side: new THREE.Vector3(-tangent.y, 0, tangent.x).multiplyScalar(widthScale),
     };
   };
 
-  const stationSet = new Set<number>([0, total, mainStart, mainEnd, ...cumulative]);
+  const stationSet = new Set<number>([0, total, mainStart, mainEnd, ...cumulative, ...northAnchors.map(a => a.station)]);
   const sampleStep = Math.min(8, total / 200);
   for (let s = sampleStep; s < total; s += sampleStep) stationSet.add(s);
   const stations = [...stationSet].filter(s => Number.isFinite(s) && s >= 0 && s <= total).sort((a, b) => a - b)
@@ -269,6 +294,7 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
     mainSpanStart: mainStartPoint.toArray(), mainSpanEnd: mainEndPoint.toArray(),
     archSpringY, archCrownY, slabThickness, sideFrameExtent,
     deckWidthM: 36, approachDeckWidthM: 24, centerCorrectionM: [-8, 0], structureTransition,
+    northCarriagewayWidthM: 11.52,
     structureEstimates: {
       archSpringY: 'photo-estimated 12 m scene elevation',
       crownRiseAboveDeckM: 'photo-estimated 23 m',
@@ -303,11 +329,12 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
       addBoxBetween(floorGeos,
         a.center.clone().addScaledVector(a.side, lateral).add(new THREE.Vector3(0, -.9, 0)),
         b.center.clone().addScaledVector(b.side, lateral).add(new THREE.Vector3(0, -.9, 0)), .35, 1.1);
-      addBoxBetween(detailGeos,
+      const midpoint = a.center.clone().lerp(b.center, .5).addScaledVector(a.side.clone().lerp(b.side, .5), lateral);
+      if (!northBranchOpening((stations[i] + stations[i + 1]) / 2) && !withinHoanApproachMerge(midpoint.x, midpoint.z)) addBoxBetween(detailGeos,
         a.center.clone().addScaledVector(a.side, lateral).add(new THREE.Vector3(0, .88, 0)),
         b.center.clone().addScaledVector(b.side, lateral).add(new THREE.Vector3(0, .88, 0)), .32, 1.15);
     }
-    addBoxBetween(detailGeos, a.center.clone().add(new THREE.Vector3(0, .65, 0)),
+    if (stations[i] <= rightFrameEnd) addBoxBetween(detailGeos, a.center.clone().add(new THREE.Vector3(0, .65, 0)),
       b.center.clone().add(new THREE.Vector3(0, .65, 0)), .38, .7);
   }
 
@@ -320,6 +347,8 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
       frame.center.clone().addScaledVector(frame.side, -10.8).add(new THREE.Vector3(0, -1.35, 0)),
       frame.center.clone().addScaledVector(frame.side, 10.8).add(new THREE.Vector3(0, -1.35, 0)), .55, 1.45);
     for (const lateral of [-11.52, 11.52]) {
+      const post = frame.center.clone().addScaledVector(frame.side, lateral);
+      if (northBranchOpening(s) || withinHoanApproachMerge(post.x, post.z)) continue;
       addBoxBetween(safetyGeos,
         frame.center.clone().addScaledVector(frame.side, lateral).add(new THREE.Vector3(0, 1.2, 0)),
         frame.center.clone().addScaledVector(frame.side, lateral).add(new THREE.Vector3(0, 3.45, 0)), .075, .075);
@@ -334,6 +363,8 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
   }
   for (let i = 0; i < stations.length - 1; i++) for (const lateral of [-11.52, 11.52]) {
     const a = frameAt(stations[i]), b = frameAt(stations[i + 1]);
+    const midpoint = a.center.clone().lerp(b.center, .5).addScaledVector(a.side.clone().lerp(b.side, .5), lateral);
+    if (northBranchOpening((stations[i] + stations[i + 1]) / 2) || withinHoanApproachMerge(midpoint.x, midpoint.z)) continue;
     addBoxBetween(safetyGeos, a.center.clone().addScaledVector(a.side, lateral).add(new THREE.Vector3(0, 3.45, 0)),
       b.center.clone().addScaledVector(b.side, lateral).add(new THREE.Vector3(0, 3.45, 0)), .09, .09);
   }
@@ -342,6 +373,7 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
   let fenceInfillCount = 0;
   for (let s = 1; s < total; s += 1) for (const lateral of [-11.52, 11.52]) {
     const frame = frameAt(s), p = frame.center.clone().addScaledVector(frame.side, lateral);
+    if (northBranchOpening(s) || withinHoanApproachMerge(p.x, p.z)) continue;
     const isPost = Math.round(s) % 3 === 0;
     addBoxBetween(safetyGeos, p.clone().add(new THREE.Vector3(0, 1.25, 0)),
       p.clone().add(new THREE.Vector3(0, 3.45, 0)), isPost ? .06 : .022, isPost ? .06 : .022);
@@ -355,18 +387,20 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
     return .54 * weight + lane * THREE.MathUtils.lerp(3.4, 3.66, weight);
   };
   for (let s = 4; s < total - 1; s += 10) for (const lateral of [-6.8, -3.4, 3.4, 6.8]) {
+    if (s > rightFrameEnd && lateral !== -3.4) continue;
     const a = frameAt(s), b = frameAt(Math.min(s + 4, total));
     const sign = Math.sign(lateral), lane = Math.abs(lateral) / 3.4;
-    addBoxBetween(markingGeos, a.center.clone().addScaledVector(a.side.clone().normalize(), sign * laneOffset(s, lane)).add(new THREE.Vector3(0, .325, 0)),
-      b.center.clone().addScaledVector(b.side.clone().normalize(), sign * laneOffset(Math.min(s + 4, total), lane)).add(new THREE.Vector3(0, .325, 0)), .13, .035);
+    addBoxBetween(markingGeos, a.center.clone().addScaledVector(a.side.clone().normalize(), s > rightFrameEnd ? 0 : sign * laneOffset(s, lane)).add(new THREE.Vector3(0, .325, 0)),
+      b.center.clone().addScaledVector(b.side.clone().normalize(), s > rightFrameEnd ? 0 : sign * laneOffset(Math.min(s + 4, total), lane)).add(new THREE.Vector3(0, .325, 0)), .13, .035);
   }
   for (let i = 1; i < stations.length; i++) for (const sign of [-1, 1]) {
     const a = frameAt(stations[i-1]), b = frameAt(stations[i]);
-    addBoxBetween(markingGeos, a.center.clone().addScaledVector(a.side.clone().normalize(), sign * laneOffset(stations[i-1], 3)).add(new THREE.Vector3(0,.325,0)),
-      b.center.clone().addScaledVector(b.side.clone().normalize(), sign * laneOffset(stations[i], 3)).add(new THREE.Vector3(0,.325,0)), .13, .035);
+    addBoxBetween(markingGeos, a.center.clone().addScaledVector(a.side.clone().normalize(), sign * (stations[i-1] > rightFrameEnd ? 10.25 * a.side.length() : laneOffset(stations[i-1], 3))).add(new THREE.Vector3(0,.325,0)),
+      b.center.clone().addScaledVector(b.side.clone().normalize(), sign * (stations[i] > rightFrameEnd ? 10.25 * b.side.length() : laneOffset(stations[i], 3))).add(new THREE.Vector3(0,.325,0)), .13, .035);
   }
   // Median Y-poles are geometry only; they do not add per-pole lights.
   for (let s = 55; s < total - 30; s += 82) {
+    if (s > rightFrameEnd) continue;
     const frame = frameAt(s), foot = frame.center.clone().add(new THREE.Vector3(0, .45, 0));
     const top = frame.center.clone().add(new THREE.Vector3(0, 10.2, 0));
     const tangent = new THREE.Vector3(frame.side.z, 0, -frame.side.x).normalize();
@@ -568,5 +602,21 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
   root.userData.lightPaths = lightPaths;
   root.userData.setLightingMode = lighting.setMode;
   root.userData.updateLighting = lighting.update;
+  const deckFrames = stations.map(s => frameAt(s));
+  const sampleDeck = (x: number, z: number) => {
+    let best = Infinity, height = 0, halfWidth = 0;
+    for (let i = 1; i < stations.length; i++) {
+      const a = deckFrames[i - 1], b = deckFrames[i];
+      const dx = b.center.x - a.center.x, dz = b.center.z - a.center.z;
+      const t = THREE.MathUtils.clamp(((x - a.center.x) * dx + (z - a.center.z) * dz) / (dx * dx + dz * dz), 0, 1);
+      const distance = Math.hypot(x - a.center.x - t * dx, z - a.center.z - t * dz);
+      if (distance < best) {
+        best = distance; height = THREE.MathUtils.lerp(a.center.y, b.center.y, t) + .3;
+        halfWidth = 10.75 * THREE.MathUtils.lerp(a.side.length(), b.side.length(), t);
+      }
+    }
+    return { height, distance: best, halfWidth };
+  };
+  root.add(buildHoanApproaches(sampleDeck, groundAt));
   return root;
 }

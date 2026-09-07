@@ -2,9 +2,10 @@ import * as THREE from 'three';
 import {createCity,type Mode} from './scene';
 import {fetchBuffer,parseTerrain,parseSections,sectionToGeometry} from './loader';
 import {bilinearTerrainHeight} from './localTerrain';
-import {prepareHoanTerrain,prepareHoanWater,adaptHoanContextTile} from './hoanSite';
+import {prepareHoanTerrain,prepareHoanWater,adaptHoanContextTile,buildHoanContext} from './hoanSite';
 import {prepareSummerfestTerrain,adaptSummerfestTile} from './summerfestSite';
 import {buildSummerfest} from './summerfest';
+import {buildHoan} from './hoan';
 const city=createCity(document.querySelector('canvas')!,document.querySelector('#labels')!,false);
 city.camera.near=.1;city.camera.updateProjectionMatrix();city.controls.minDistance=2;
 const rawTerrain=parseTerrain(await fetchBuffer('/data/terrain.bin'));
@@ -12,6 +13,11 @@ const terrain=prepareSummerfestTerrain(prepareHoanTerrain(rawTerrain));
 const groundAt=(x:number,z:number)=>bilinearTerrainHeight(terrain,x,z);
 city.addTerrain(terrain);city.addWater(prepareHoanWater(parseSections(await fetchBuffer('/data/water.bin'))));
 const model=buildSummerfest(groundAt);city.landmarks.add(model);
+// The road tiles exclude the custom Hoan corridor. Include the same bridge
+// as the city so the festival's freeway approaches have their continuation.
+const landmarkGeo=await (await fetch('/data/landmarks_geo.json')).json();
+const bridge=buildHoan(landmarkGeo.hoan,groundAt);
+city.landmarks.add(bridge,buildHoanContext(groundAt));
 for(const [i,j] of [[0,0],[0,-1],[-1,0],[-1,-1]]){
  const g=new THREE.Group();
  for(const section of parseSections(await fetchBuffer(`/data/tiles/t_${i}_${j}.bin`))){
@@ -25,6 +31,7 @@ const views:Record<string,{eye:[number,number,number];target:[number,number,numb
  skyglider:{eye:[930,110,338],target:[499,8,338]},
  northTerminal:{eye:[476,8,82],target:[489.2,4,97]},
  southTerminal:{eye:[499,8,593],target:[512.7,4,579]},
+ roads:{eye:[-80,520,700],target:[275,12,280]},
  harbor:{eye:[215,95,390],target:[405,5,350]},
  gateway:{eye:[155,125,-135],target:[400,5,-25]},
  erie:{eye:[290,55,1045],target:[505,4,970]},
@@ -38,12 +45,12 @@ const views:Record<string,{eye:[number,number,number];target:[number,number,numb
 };
 function view(key:string){const v=views[key];city.camera.position.fromArray(v.eye);city.controls.target.fromArray(v.target);city.controls.update();document.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.angle===key)));}
 document.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.onclick=()=>view(b.dataset.angle!));
-document.querySelector('select')!.onchange=e=>{const mode=(e.target as HTMLSelectElement).value.toLowerCase() as Mode;city.setMode(mode);model.userData.setLightingMode(mode);};
+document.querySelector('select')!.onchange=e=>{const mode=(e.target as HTMLSelectElement).value.toLowerCase() as Mode;city.setMode(mode);model.userData.setLightingMode(mode);bridge.userData.setLightingMode(mode);};
 const initialView=new URLSearchParams(location.search).get('view');
 view(initialView&&views[initialView]?initialView:'aerial');city.resize();addEventListener('resize',()=>city.resize());
 let motionPaused=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const motionButton=document.querySelector<HTMLButtonElement>('#skyglider-motion')!;
 const syncMotion=()=>{motionButton.textContent=motionPaused?'Play Skyglider':'Pause Skyglider';motionButton.setAttribute('aria-pressed',String(motionPaused));};syncMotion();
 motionButton.onclick=()=>{motionPaused=!motionPaused;syncMotion();};
-let previous=performance.now();city.renderer.setAnimationLoop(now=>{const dt=Math.min(.05,(now-previous)/1000);model.userData.update(dt,motionPaused);city.render(dt);previous=now;});
+let previous=performance.now();city.renderer.setAnimationLoop(now=>{const dt=Math.min(.05,(now-previous)/1000);model.userData.update(dt,motionPaused);bridge.userData.updateLighting(now/1000,motionPaused);city.render(dt);previous=now;});
 if(import.meta.hot)import.meta.hot.dispose(()=>{city.renderer.setAnimationLoop(null);model.userData.dispose?.();city.controls.dispose();city.renderer.dispose();});
