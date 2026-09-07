@@ -1,3 +1,4 @@
+import { buildSummerfestRampEmbankments } from './summerfestRamps';
 import { createStreetLighting } from './streetLighting';
 import { STREET_LIGHT_SITES } from './streetLightSites';
 import { RAVE_SITE, removeRavePlaceholder } from './raveSite';
@@ -106,6 +107,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
   // landmarks: interpretive geometry + clickable labels
   city.landmarks.add(buildInterpretive(manifest, geo, groundAt));
   city.landmarks.add(buildHoanContext(groundAt));
+  city.landmarks.add(buildSummerfestRampEmbankments(rawTerrainData!,terrainData!));
   const streetLighting=createStreetLighting(STREET_LIGHT_SITES,groundAt,{mobile});
   city.landmarks.add(streetLighting.root);streetLighting.setMode(city.mode);
   const museum = city.landmarks.getObjectByName('milwaukee-art-museum-campus');

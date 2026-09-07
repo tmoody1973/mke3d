@@ -3,6 +3,7 @@ import type {TerrainData} from './loader.ts';
 import {SUMMERFEST_BOUNDARY,SUMMERFEST_BUILDINGS} from './summerfestSiteData.ts';
 import {bilinearTerrainHeight,terrainHeight} from './localTerrain.ts';
 import {withinHoanHarbor} from './hoanSite.ts';
+import {summerfestRampProfiles} from './summerfestRamps.ts';
 
 export const SUMMERFEST_FOCUS={x:543,z:433};
 export const SUMMERFEST_VENUES=[
@@ -78,6 +79,7 @@ export function adaptSummerfestTile(group:THREE.Group,tile:{i:number;j:number},g
  // region, so its older vertex-only adapter must not apply the delta twice.
  if(rawTerrain&&renderedTerrain&&!group.userData.summerfestRoadsAdapted){
   group.traverse(o=>{if(o instanceof THREE.Mesh&&o.name==='ROAD')groundFestivalRoad(o,rawTerrain,renderedTerrain,groundAt);});
+  group.traverse(o=>{if(o instanceof THREE.Mesh&&o.name==='HWAY')correctRampMarkings(o,rawTerrain,renderedTerrain);});
   group.userData.summerfestRoadsAdapted=true;
   if(tile.j===-1)group.userData.hoanGrounded=true;
  }
@@ -130,11 +132,18 @@ function groundFestivalRoad(mesh:THREE.Mesh,raw:TerrainData,terrain:TerrainData,
   }return result;
  };
  const x=(v:number[])=>v[positionOffset],z=(v:number[])=>v[positionOffset+2];
- let grounded=0,retainedElevated=0;
+ const ramps=summerfestRampProfiles(raw,terrain);
+ let grounded=0,retainedElevated=0,correctedRampTriangles=0;
  for(let i=0;i<p.count;i+=3){
   const tri=[vertex(i),vertex(i+1),vertex(i+2)],xs=tri.map(x),zs=tri.map(z),minX=Math.min(...xs),maxX=Math.max(...xs),minZ=Math.min(...zs),maxZ=Math.max(...zs);
   // Both terrain corrections are zero beyond these source-grid support bounds.
   if(maxX<80||minX>880||maxZ< -200||minZ>1660){emit(tri);continue;}
+  const ramp=ramps.match(tri.map(v=>[x(v),v[positionOffset+1],z(v)]));
+  if(ramp){
+   correctedRampTriangles++;
+   emit(tri.map(v=>{const copy=v.slice();copy[positionOffset+1]=ramps.target(ramp,x(v),z(v));return copy;}));
+   continue;
+  }
   if(tri.some(v=>Math.abs(v[positionOffset+1]-bilinearTerrainHeight(raw,x(v),z(v))-.4)>1)){
    retainedElevated++;emit(tri);continue;
   }
@@ -161,11 +170,29 @@ function groundFestivalRoad(mesh:THREE.Mesh,raw:TerrainData,terrain:TerrainData,
    }
   }
  }
- if(!grounded)return;
+ if(!grounded&&!correctedRampTriangles)return;
  const geometry=new THREE.BufferGeometry();attributes.forEach(([name,a],i)=>{
   const array=new (a.array.constructor as {new(length:number):typeof a.array})(output[i].length);array.set(output[i]);
   geometry.setAttribute(name,new THREE.BufferAttribute(array,a.itemSize,a.normalized));
  });
  geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();mesh.geometry=geometry;source.dispose();
- mesh.userData.summerfestRoads={groundedTriangles:grounded,preservedElevatedTriangles:retainedElevated,sourceVertices:p.count,vertices:geometry.getAttribute('position').count};
+ mesh.userData.summerfestRoads={groundedTriangles:grounded,preservedElevatedTriangles:retainedElevated,correctedRampTriangles,sourceVertices:p.count,vertices:geometry.getAttribute('position').count};
+}
+
+/** Nonbridge HWAY geometry is paint only. Match its source route and +.14 m
+ * paint offset, keeping structural bridge details untouched. */
+function correctRampMarkings(mesh:THREE.Mesh,raw:TerrainData,terrain:TerrainData){
+ const source=mesh.geometry,p=source.getAttribute('position');if(!p||source.index)return;
+ const ramps=summerfestRampProfiles(raw,terrain);let corrected=0;
+ const geometry=source.clone(),positions=geometry.getAttribute('position');
+ for(let i=0;i<p.count;i+=3){
+  const tri=[0,1,2].map(k=>[p.getX(i+k),p.getY(i+k),p.getZ(i+k)]);
+  if(tri.every(v=>v[0]<80||v[0]>880||v[2]<-200||v[2]>1660))continue;
+  const ramp=ramps.match(tri,true);if(!ramp)continue;
+  for(let k=0;k<3;k++)positions.setY(i+k,ramps.target(ramp,tri[k][0],tri[k][2])+.14);
+  corrected++;
+ }
+ if(!corrected){geometry.dispose();return;}
+ geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();mesh.geometry=geometry;source.dispose();
+ mesh.userData.summerfestRampMarkings=corrected;
 }

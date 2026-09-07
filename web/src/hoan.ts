@@ -8,7 +8,7 @@ import { buildHoanApproaches, withinHoanApproachMerge } from './hoanApproaches.t
 type HoanGeo = NonNullable<LandmarkGeo['hoan']>;
 
 const concrete = new THREE.MeshStandardMaterial({ color: 0xaaa69d, roughness: .95 });
-const asphalt = new THREE.MeshStandardMaterial({ color: 0x45484b, roughness: .92 });
+const asphalt = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: .92 });
 const steel = new THREE.MeshStandardMaterial({ color: 0xe7ad32, roughness: .45, metalness: .25 });
 const darkConcrete = new THREE.MeshStandardMaterial({ color: 0x77756f, roughness: .95 });
 const floorSteel = new THREE.MeshStandardMaterial({ color: 0x566871, roughness: .65, metalness: .2 });
@@ -303,7 +303,18 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
     },
   };
   const deckGeos: THREE.BufferGeometry[] = [closedRibbon(stations, frameAt, 24, 0, slabThickness)];
-  const roadGeos: THREE.BufferGeometry[] = [closedRibbon(stations, frameAt, 21.5, .3, .3)];
+  const roadwayGeometry = closedRibbon(stations, frameAt, 21.5, .3, .3);
+  // The user's Lake Interchange aerials show pale concrete paving on the
+  // mainline approaches. Keep the harbor's existing asphalt treatment.
+  const roadwayPositions = roadwayGeometry.getAttribute('position');
+  const roadwayColors = new Float32Array(roadwayPositions.count * 3);
+  const harborPaving = new THREE.Color(0x45484b), approachPaving = new THREE.Color(0xa4a298);
+  for (let i = 0; i < roadwayPositions.count; i++) {
+    const color = harborPaving.clone().lerp(approachPaving, 1 - smoothstep((roadwayPositions.getZ(i) - 850) / 120));
+    color.toArray(roadwayColors, i * 3);
+  }
+  roadwayGeometry.setAttribute('color', new THREE.BufferAttribute(roadwayColors, 3));
+  const roadGeos: THREE.BufferGeometry[] = [roadwayGeometry];
   const floorGeos: THREE.BufferGeometry[] = [];
   const detailGeos: THREE.BufferGeometry[] = [];
   const markingGeos: THREE.BufferGeometry[] = [];
@@ -348,7 +359,7 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
       frame.center.clone().addScaledVector(frame.side, 10.8).add(new THREE.Vector3(0, -1.35, 0)), .55, 1.45);
     for (const lateral of [-11.52, 11.52]) {
       const post = frame.center.clone().addScaledVector(frame.side, lateral);
-      if (northBranchOpening(s) || withinHoanApproachMerge(post.x, post.z)) continue;
+      if (post.z < 930 || northBranchOpening(s) || withinHoanApproachMerge(post.x, post.z)) continue;
       addBoxBetween(safetyGeos,
         frame.center.clone().addScaledVector(frame.side, lateral).add(new THREE.Vector3(0, 1.2, 0)),
         frame.center.clone().addScaledVector(frame.side, lateral).add(new THREE.Vector3(0, 3.45, 0)), .075, .075);
@@ -364,7 +375,7 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
   for (let i = 0; i < stations.length - 1; i++) for (const lateral of [-11.52, 11.52]) {
     const a = frameAt(stations[i]), b = frameAt(stations[i + 1]);
     const midpoint = a.center.clone().lerp(b.center, .5).addScaledVector(a.side.clone().lerp(b.side, .5), lateral);
-    if (northBranchOpening((stations[i] + stations[i + 1]) / 2) || withinHoanApproachMerge(midpoint.x, midpoint.z)) continue;
+    if (midpoint.z < 930 || northBranchOpening((stations[i] + stations[i + 1]) / 2) || withinHoanApproachMerge(midpoint.x, midpoint.z)) continue;
     addBoxBetween(safetyGeos, a.center.clone().addScaledVector(a.side, lateral).add(new THREE.Vector3(0, 3.45, 0)),
       b.center.clone().addScaledVector(b.side, lateral).add(new THREE.Vector3(0, 3.45, 0)), .09, .09);
   }
@@ -373,7 +384,7 @@ export function buildHoan(h: HoanGeo, groundAt: (x: number, z: number) => number
   let fenceInfillCount = 0;
   for (let s = 1; s < total; s += 1) for (const lateral of [-11.52, 11.52]) {
     const frame = frameAt(s), p = frame.center.clone().addScaledVector(frame.side, lateral);
-    if (northBranchOpening(s) || withinHoanApproachMerge(p.x, p.z)) continue;
+    if (p.z < 930 || northBranchOpening(s) || withinHoanApproachMerge(p.x, p.z)) continue;
     const isPost = Math.round(s) % 3 === 0;
     addBoxBetween(safetyGeos, p.clone().add(new THREE.Vector3(0, 1.25, 0)),
       p.clone().add(new THREE.Vector3(0, 3.45, 0)), isPost ? .06 : .022, isPost ? .06 : .022);

@@ -121,7 +121,7 @@ export function buildHoanApproaches(sampleDeck: SampleDeck, groundAt: (x: number
       for (let k = 0; k < 3; k++) [road[i + 3 + k], road[i + 6 + k]] = [road[i + 6 + k], road[i + 3 + k]];
     }
   }
-  mesh('hoan-southbound-roadway', arrayGeometry(road), new THREE.MeshStandardMaterial({ color: 0x45484b, roughness: .92 }));
+  mesh('hoan-southbound-roadway', arrayGeometry(road), new THREE.MeshStandardMaterial({ color: 0xa4a298, roughness: .92 }));
   const slab = arrayGeometry(concrete);
   // Normalizing the box geometry permits one merged concrete/support draw.
   const parts = [slab, ...furniture.map(g => { const flat = g.toNonIndexed(); g.dispose(); return flat; })];

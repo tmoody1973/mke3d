@@ -6,6 +6,7 @@ import {adaptSummerfestTile,prepareSummerfestTerrain,summerfestApproachTerrainWe
 import {prepareHoanTerrain,adaptHoanContextTile} from '../src/hoanSite.ts';
 import {bilinearTerrainHeight,terrainHeight} from '../src/localTerrain.ts';
 import type {TerrainData} from '../src/loader.ts';
+import {summerfestRampProfiles} from '../src/summerfestRamps.ts';
 
 function loadTerrain():TerrainData{
  const b=readFileSync(new URL('../public/data/terrain.bin',import.meta.url)),d=new DataView(b.buffer,b.byteOffset,b.byteLength),nx=d.getUint32(4,true),ny=d.getUint32(8,true);
@@ -29,11 +30,12 @@ const after=original.mesh.geometry.getAttribute('position'),afterColors=original
 const triangleKey=(p:ArrayLike<number>,i:number)=>Array.from({length:9},(_,k)=>p[i+k]).join(',');
 const afterTriangles=new Set<string>();for(let i=0;i<after.array.length;i+=9)afterTriangles.add(triangleKey(after.array,i));
 
-test('festival terrain repair preserves complete elevated ROAD triangles, including Lake Freeway ramps',()=>{
+test('festival terrain repair preserves bridge ROAD triangles while grading source-identified surface ramp approaches',()=>{
  let decks=0;
  for(let i=0;i<before.length;i+=9){
   if(![0,3,6].some(k=>before[i+k]>80&&before[i+k]<880&&before[i+k+2]>-200&&before[i+k+2]<1660))continue;
   if(![0,3,6].some(k=>Math.abs(before[i+k+1]-bilinearTerrainHeight(raw,before[i+k],before[i+k+2])-.4)>1))continue;
+  if(summerfestRampProfiles(raw,corrected).match([0,3,6].map(k=>[before[i+k],before[i+k+1],before[i+k+2]])))continue;
   assert.ok(afterTriangles.has(triangleKey(before,i)),'elevated surface triangle was moved or cut');decks++;
  }
  assert.ok(decks>100);

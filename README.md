@@ -128,6 +128,8 @@ Run `pipeline/.venv/bin/python pipeline/test_roads.py` to check road widths, pre
 
 ## Highways and Marquette Interchange
 
+See the [I-794 existing-condition review](docs/i794-existing-conditions.md) for the current WisDOT evidence, reference-pack corrections, and Lake Interchange ramp-grade validation. The Summerfest review includes matching Lake Interchange, Third Ward and ramp-grade camera views.
+
 The highway model recognizes open-ended OSM bridge tags, including `bridge=cantilever`, which was previously omitted and caused several Marquette decks to collapse to terrain level. Freeway elevation profiles join only identical original source coordinates, so crossing ramps remain separate. Shared structural anchors keep adjoining decks connected; untagged segments between bridge anchors interpolate between them. Hoan connection elevations remain pinned to the interpretive model's endpoints.
 
 The Summerfest review includes the custom Hoan Bridge as well as the surrounding road tiles. Its **Freeway connections** view exposes the full northern approach network for visual checking; see [Summerfest road connections](docs/summerfest-reference.md#lakefront-road-connections) and [Hoan reference notes](docs/hoan-reference.md).

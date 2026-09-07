@@ -1,3 +1,4 @@
+import {buildSummerfestRampEmbankments} from './summerfestRamps';
 import * as THREE from 'three';
 import {createCity,type Mode} from './scene';
 import {fetchBuffer,parseTerrain,parseSections,sectionToGeometry} from './loader';
@@ -17,7 +18,7 @@ const model=buildSummerfest(groundAt);city.landmarks.add(model);
 // as the city so the festival's freeway approaches have their continuation.
 const landmarkGeo=await (await fetch('/data/landmarks_geo.json')).json();
 const bridge=buildHoan(landmarkGeo.hoan,groundAt);
-city.landmarks.add(bridge,buildHoanContext(groundAt));
+city.landmarks.add(bridge,buildHoanContext(groundAt),buildSummerfestRampEmbankments(rawTerrain,terrain));
 for(const [i,j] of [[0,0],[0,-1],[-1,0],[-1,-1]]){
  const g=new THREE.Group();
  for(const section of parseSections(await fetchBuffer(`/data/tiles/t_${i}_${j}.bin`))){
@@ -31,6 +32,9 @@ const views:Record<string,{eye:[number,number,number];target:[number,number,numb
  skyglider:{eye:[930,110,338],target:[499,8,338]},
  northTerminal:{eye:[476,8,82],target:[489.2,4,97]},
  southTerminal:{eye:[499,8,593],target:[512.7,4,579]},
+ interchange:{eye:[650,155,465],target:[265,16,140]},
+ thirdWard:{eye:[-710,145,40],target:[100,16,-20]},
+ rampGrade:{eye:[510,25,-86],target:[414,8,-22]},
  roads:{eye:[-80,520,700],target:[275,12,280]},
  harbor:{eye:[215,95,390],target:[405,5,350]},
  gateway:{eye:[155,125,-135],target:[400,5,-25]},
