@@ -38,8 +38,8 @@ export function buildTurnerHall(groundAt:(x:number,z:number)=>number){
  box('stone',0,.8,-18,45.72,3,5.52);box('brick',0,6.55,-18,45.72,9.5,5.52);
  hip(0,0,46.2,30.95,18.8,21.3,4.4);box('roof',0,11.4,-18,46,.28,5.6);
  const front=-22.86;
- for(const z of [-10,10]){box('brick',front-.30,10.25,z,.62,17,5.6);gable(z,6,18.7,22.7,front-.66,5.6);window(front-.8,z-.58,19.1,1.1,.6,false);window(front-.8,z+.58,19.1,1.1,.6,false);}
- box('brick',front-.58,10.2,0,1.2,17.4,6.2);box('stone',front-.9,18.9,0,1.9,.40,6.8);
+ for(const z of [-10,10]){box('stone',front-.30,.8,z,.62,3,5.6);box('brick',front-.30,10.25,z,.62,17,5.6);gable(z,6,18.7,22.7,front-.66,5.6);window(front-.8,z-.58,19.1,1.1,.6,false);window(front-.8,z+.58,19.1,1.1,.6,false);}
+ box('stone',front-.58,.8,0,1.2,3,6.2);box('brick',front-.58,10.2,0,1.2,17.4,6.2);box('stone',front-.9,18.9,0,1.9,.40,6.8);
  // Central roof tower and its four dormers.
  box('brick',front+2.05,22,0,5.5,6.2,5.3);box('red',front+2.05,25.08,0,5.9,.52,5.75);
  hip(front+2.05,0,6.0,5.8,25.36,29.2,2.7);
@@ -66,7 +66,7 @@ export function buildTurnerHall(groundAt:(x:number,z:number)=>number){
  for(const z of [-2.65,2.65]){box('stone',front-2.04,2.5,z,.65,4.4,.72);box('stone',front-2.05,5.2,z,.8,.35,1);}
  for(const z of [-1.15,0,1.15])box('red',front-2.34,3.2,z,.11,5.2,.09);
  for(const y of [.6,3.75,5.5])box('red',front-2.34,y,0,.12,.14,4.6);
- for(let i=0;i<4;i++)box('stone',front-2.1-i*.3,.07+i*.12,0,.6,.14+i*.24,4.7);
+ for(let i=0;i<4;i++)box('stone',front-2.1-i*.3,.07+(3-i)*.12,0,.6,.14+(3-i)*.24,4.7);
  // Limestone block joints at pedestrian height, including long side walls.
  for(let y=-.4;y<2;y+=.48){for(let z=-15;z<15;z+=1.35)box('mortar',front-.06,y,z,.025,.022,1.27);for(const s of [-1,1])for(let x=-22;x<22;x+=1.4)box('mortar',x,y,s*15.25,1.34,.025,.025);}
  // Utilitarian south/north brick elevations and asymmetric service windows.
