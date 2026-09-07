@@ -345,7 +345,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
     setLighting(mode){document.querySelector<HTMLButtonElement>(`button[data-mode="${mode}"]`)?.click();},
   });
   $('#landmark-walk').addEventListener('click',()=>walking?.start(selectedLabelId));
-  import.meta.hot?.dispose(() => {hop?.dispose();driving?.dispose();walking?.dispose();streetLighting.dispose();});
+  import.meta.hot?.dispose(() => {hop?.dispose();driving?.dispose();walking?.dispose();streetLighting.dispose();summerfest?.userData.dispose?.();});
   (window as unknown as { __MKE3D_STATE__: object }).__MKE3D_STATE__ = { city, director, landmarks: LANDMARKS, landmarkButtons, streetLighting };
 
   // render loop
@@ -369,6 +369,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
   const loop = () => {
     const dt = clock.getDelta(), now = performance.now();
     hoan?.userData.updateLighting?.(now / 1000, reduceMotion);
+    summerfest?.userData.update?.(dt,reduceMotion);
     hop?.update(dt);
     if(!driving?.active&&!walking?.active)director.update(now);
     driving?.update(dt);

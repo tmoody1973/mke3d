@@ -45,3 +45,8 @@ The previous festival adapter incorrectly treated every `ROAD` surface as ground
 The road review presets provide closer checks of Harbor Drive, the north connections, and Erie Street instead of relying only on a campus aerial. Geometry tests check actual shipped road tiles, elevated-road preservation, terrain clearance, and repeat application. These checks establish geometric consistency; this remains an interpreted model, not a surveyed road design.
 
 The corrected road surfaces also drive the street-light generator's final height pass: 58 nearby fixture/pool anchors were resampled and one invalid shoreline node omitted. The main model and the standalone review use the same terrain inputs and road fitting logic.
+
+
+## Animated Skyglider
+
+The campus includes an animated two-lane Skyglider following cached OSM way 597941283, with low terminal turns and 94 colorful open double chairs. Review placement, photographic evidence, dated chair count, and estimated height in [skyglider-reference.md](skyglider-reference.md). The Skyglider route and terminal camera presets include pause/play; it also animates in the main city and respects reduced-motion preferences. Procedural tree placement leaves the cable corridor clear without removing mapped buildings.

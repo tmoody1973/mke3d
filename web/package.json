@@ -28,7 +28,7 @@
     "test:usbank": "node --test tests/usBank*.test.ts",
     "test:port": "node --test tests/port*.test.ts tests/jonesIsland*.test.ts",
     "test:newmuseum": "node --test tests/newMuseum*.test.ts",
-    "test:summerfest": "node --test tests/summerfest.test.ts tests/summerfestRoads.test.ts",
+    "test:summerfest": "node --test tests/summerfest.test.ts tests/summerfestRoads.test.ts tests/skyglider.test.ts",
     "test:walking": "node --test tests/walking*.test.ts"
   },
   "devDependencies": {

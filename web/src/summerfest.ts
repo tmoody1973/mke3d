@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {buildSkyglider,distanceToSkygliderRoute} from './skyglider.ts';
 import {districtGeometry} from './districtGeometry.ts';
 import {buildSummerfestVenue} from './summerfestVenues.ts';
 import {SUMMERFEST_VENUES,withinSummerfest} from './summerfestSite.ts';
@@ -7,6 +8,9 @@ type Point=readonly [number,number];
 
 export function buildSummerfest(groundAt:(x:number,z:number)=>number){
  const root=new THREE.Group();root.name='summerfest-grounds';
+ const skyglider=buildSkyglider(groundAt);root.add(skyglider);
+ root.userData.update=(dt:number,reducedMotion=false)=>skyglider.userData.update(dt,reducedMotion);
+ root.userData.dispose=()=>skyglider.userData.dispose();
  const b=districtGeometry(root);
  const material=(color:number)=>new THREE.MeshStandardMaterial({color,roughness:.86});
  const paving=material(0xbab7a8),brick=material(0x926849),roof=material(0x67716e),metal=material(0x485353),wood=material(0x886444),grass=material(0x6f8051),leaf=material(0x59733e),glass=material(0x263b40),red=material(0xaf5444),cream=material(0xdedbd0);
@@ -78,7 +82,7 @@ export function buildSummerfest(groundAt:(x:number,z:number)=>number){
  });
  let trees=0;
  function tree(x:number,z:number){
-  if(!withinSummerfest(x,z)||blocked(x,z,4))return;
+  if(!withinSummerfest(x,z)||blocked(x,z,4)||distanceToSkygliderRoute(x,z)<6)return;
   const y=groundAt(x,z);b.cylinder(x,y+2.2,z,.22,4.4,wood,'festival-tree-trunks',7);
   b.add(new THREE.IcosahedronGeometry(3.7,1).scale(1,1.15,1).translate(x,y+5.5,z),leaf,'festival-tree-canopies');trees++;
  }
@@ -138,9 +142,10 @@ export function buildSummerfest(groundAt:(x:number,z:number)=>number){
  root.userData.setLightingMode=(mode:'day'|'sunset'|'night')=>{
   const level=mode==='night'?1:mode==='sunset'?.45:0;
   glow.emissiveIntensity=level*2.5;counterGlow.emissiveIntensity=level*1.15;poolMat.opacity=level; pools.visible=level>0;
+  skyglider.userData.setLightingMode(mode);
   venues.forEach(v=>v.userData.setLightingMode(mode));root.userData.lightingMode=mode;
  };
  root.userData.setLightingMode('day');
- root.userData.stats={venues:venues.length,mappedBuildings:SUMMERFEST_BUILDINGS.length,paths:SUMMERFEST_PATHS.length,trees,lamps:lampPoints.length};
+ root.userData.stats={skyglider:skyglider.userData.stats,venues:venues.length,mappedBuildings:SUMMERFEST_BUILDINGS.length,paths:SUMMERFEST_PATHS.length,trees,lamps:lampPoints.length};
  return root;
 }

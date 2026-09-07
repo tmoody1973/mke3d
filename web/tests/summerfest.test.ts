@@ -20,7 +20,9 @@ const model=buildSummerfest(()=>2.2);
 test('all nine venues have finite, bounded geometry at mapped locations',()=>{
  for(const site of SUMMERFEST_VENUES){const venue=model.getObjectByName(`summerfest-${site.id}`)!;assert.ok(venue);assert.equal(venue.position.x,site.x);assert.equal(venue.position.z,site.z);assert.ok(withinSummerfest(site.x,site.z));}
  let meshes=0;model.traverse(o=>{if(o instanceof THREE.Mesh){meshes++;for(const n of o.geometry.getAttribute('position').array)assert.ok(Number.isFinite(n));}});
- assert.ok(meshes<130,`too many unbatched meshes: ${meshes}`);
+ // Skyglider adds 13 batched meshes, including three shared 94-chair batches.
+ assert.ok(meshes<143,`too many unbatched meshes: ${meshes}`);
+ assert.equal(model.userData.stats.skyglider.chairs,94);
  assert.equal(model.userData.stats.mappedBuildings,80);assert.ok(model.userData.stats.paths>=60);assert.ok(model.userData.stats.lamps>=15);
 });
 test('night and sunset light the campus, and day extinguishes every venue light',()=>{
