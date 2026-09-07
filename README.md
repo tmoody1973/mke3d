@@ -177,3 +177,7 @@ Saint Kate – The Arts Hotel now has a mapped exterior model with brick guest-r
 ### The Rave / Eagles Club
 
 The Rave has a mapped exterior with its three monumental arches, upper arcade, ornamental stone bands, recessed entrances and night lighting. It is included in walking and tours. [Model review](https://mke3d.vercel.app/rave-review.html). References and scope are recorded in `docs/rave-reference.md`.
+
+### Street lighting
+
+Mapped street-light locations and road-based infill now use five fixture families, with sunset and night illumination and a bounded pool of nearby lights. [Fixture review](https://mke3d.vercel.app/street-lighting-review.html). Sources, placement and rendering details are recorded in `docs/street-lighting-reference.md`.

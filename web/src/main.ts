@@ -1,3 +1,5 @@
+import { createStreetLighting } from './streetLighting';
+import { STREET_LIGHT_SITES } from './streetLightSites';
 import { RAVE_SITE, removeRavePlaceholder } from './raveSite';
 import { SAINT_KATE_SITE, removeSaintKatePlaceholder } from './saintKateSite';
 import { MARCUS_SITE, PECK_SITE, removeMarcusPlaceholders } from './marcusSite';
@@ -104,6 +106,8 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
   // landmarks: interpretive geometry + clickable labels
   city.landmarks.add(buildInterpretive(manifest, geo, groundAt));
   city.landmarks.add(buildHoanContext(groundAt));
+  const streetLighting=createStreetLighting(STREET_LIGHT_SITES,groundAt,{mobile});
+  city.landmarks.add(streetLighting.root);streetLighting.setMode(city.mode);
   const museum = city.landmarks.getObjectByName('milwaukee-art-museum-campus');
   const lightMuseum = () => museum?.userData.setMuseumMode?.(city.mode);
   lightMuseum();
@@ -241,7 +245,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
 
   // UI wiring
   document.querySelectorAll<HTMLButtonElement>('button[data-mode]').forEach(btn => btn.addEventListener('click', () => {
-    city.setMode(btn.dataset.mode as Mode); signs.setMode(city.mode); lightMuseum(); lightSummerfest(); lightNewMuseum(); lightDiscovery(); lightMarket(); lightHoan(); lightPort(); lightDomes(); lightAmFam(); lightLighthouse(); lightCouture(); lightNM(); lightUsBank(); lightFiserv(); lightTheaters();
+    city.setMode(btn.dataset.mode as Mode); streetLighting.setMode(city.mode); signs.setMode(city.mode); lightMuseum(); lightSummerfest(); lightNewMuseum(); lightDiscovery(); lightMarket(); lightHoan(); lightPort(); lightDomes(); lightAmFam(); lightLighthouse(); lightCouture(); lightNM(); lightUsBank(); lightFiserv(); lightTheaters();
     hop?.setMode(city.mode);
     document.querySelectorAll('button[data-mode]').forEach(x => x.setAttribute('aria-pressed', String(x === btn))); }));
   document.querySelectorAll<HTMLButtonElement>('button[data-tour-speed]').forEach(btn => btn.addEventListener('click', () => {
@@ -341,8 +345,8 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
     setLighting(mode){document.querySelector<HTMLButtonElement>(`button[data-mode="${mode}"]`)?.click();},
   });
   $('#landmark-walk').addEventListener('click',()=>walking?.start(selectedLabelId));
-  import.meta.hot?.dispose(() => {hop?.dispose();driving?.dispose();walking?.dispose();});
-  (window as unknown as { __MKE3D_STATE__: object }).__MKE3D_STATE__ = { city, director, landmarks: LANDMARKS, landmarkButtons };
+  import.meta.hot?.dispose(() => {hop?.dispose();driving?.dispose();walking?.dispose();streetLighting.dispose();});
+  (window as unknown as { __MKE3D_STATE__: object }).__MKE3D_STATE__ = { city, director, landmarks: LANDMARKS, landmarkButtons, streetLighting };
 
   // render loop
   const clock = new THREE.Clock();
@@ -375,6 +379,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
     if (director.isAnimating && now - lastFlightTiles > 1000 && lastTileFocus.distanceTo(city.controls.target) > 350) {
       refocus(); lastTileFocus.copy(city.controls.target); lastFlightTiles = now;
     }
+    streetLighting.update(city.camera.position);
     city.render(dt, !!driving?.active || !!walking?.active || director.isAnimating);
     if (now - lastCollisionCheck >= 100) { resolveLabelCollisions(); lastCollisionCheck = now; }
     requestAnimationFrame(loop);
@@ -386,7 +391,7 @@ function fillAbout(m: Manifest) {
   const s = m.stats; const hs = s.height_source;
   $('#about-stats').innerHTML = `<tr><td>Buildings rendered</td><td>${s.buildings.toLocaleString()} (${s.buildings_in_city_limits.toLocaleString()} inside city limits)</td></tr>` +
     Object.entries(hs).map(([k, v]) => `<tr><td>Height from ${k === 'height' ? 'OSM height tag' : k === 'levels' ? 'OSM floor count' : k === 'landmark' ? 'interpretive model' : 'documented estimate'}</td><td>${v.count.toLocaleString()} (${v.pct}%)</td></tr>`).join('') +
-    `<tr><td>Data generated</td><td>${s.generated}</td></tr><tr><td>Lake polygon</td><td>${s.lake_area_km2 ?? '—'} km²</td></tr>`;
+    `<tr><td>Street light fixtures</td><td>${STREET_LIGHT_SITES.length.toLocaleString()}</td></tr><tr><td>Data generated</td><td>${s.generated}</td></tr><tr><td>Lake polygon</td><td>${s.lake_area_km2 ?? '—'} km²</td></tr>`;
 }
 
 boot();
