@@ -173,3 +173,7 @@ The Marcus Performing Arts Center, Peck Pavilion, north parking garage and State
 ### Saint Kate
 
 Saint Kate – The Arts Hotel now has a mapped exterior model with brick guest-room floors, arched stone window bands, detailed Kilbourn entrance and red neon signage. It is included in walking, tours and day/sunset/night lighting. [Hotel review](https://mke3d.vercel.app/saint-kate-review.html). References and scope are recorded in `docs/saint-kate-reference.md`.
+
+### The Rave / Eagles Club
+
+The Rave has a mapped exterior with its three monumental arches, upper arcade, ornamental stone bands, recessed entrances and night lighting. It is included in walking and tours. [Model review](https://mke3d.vercel.app/rave-review.html). References and scope are recorded in `docs/rave-reference.md`.
