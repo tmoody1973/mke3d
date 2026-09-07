@@ -15,3 +15,7 @@ Placement uses mapped street-light nodes from the project's OSM extract, supplem
 Physical poles and luminous lenses are instanced by fixture family. Ground accents and nearby real lights make sunset and night visible without creating a separate dynamic light for every pole. A single shared pool is capped at six dynamic street lights on desktop and three on mobile, with shadows disabled. Selection follows the camera during walking, driving and map movement.
 
 Validation checks fixture dimensions and lens visibility, grounded instance transforms, bounded light selection, daylight reset, disposal, source provenance, obstacle exclusions and placement elevations. Browser review checks appearance and actual street context separately from automated tests.
+
+## Summerfest road/terrain integration
+
+The street-light generator now resamples affected anchors through the shared Summerfest/Hoan terrain and road adapters after its original placement pass. This keeps fixtures on the same corrected surfaces used by the viewer. The road repair changed 58 height/pool anchors without moving their horizontal placement; one invalid below-water shoreline fixture was omitted. The final dataset has 1,920 fixtures (705 mapped nodes and 1,215 derived placements). The generator's `--check` includes this shared surface pass.

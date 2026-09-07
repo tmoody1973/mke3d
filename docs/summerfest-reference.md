@@ -1,6 +1,6 @@
 # Summerfest grounds / Henry Maier Festival Park
 
-Implemented September 7, 2026 using the user-provided `summerfest_grounds_detailed_threejs_reference_pack` and the project's cached September 6 Geofabrik OpenStreetMap extract. Review at `/summerfest-review.html` with eight 1×-height camera presets and Day / Sunset / Night controls.
+Implemented September 7, 2026 using the user-provided `summerfest_grounds_detailed_threejs_reference_pack` and the project's cached September 6 Geofabrik OpenStreetMap extract. Review at `/summerfest-review.html` with dedicated campus, pavilion, Harbor Drive, north road connections, and Erie Street 1×-height camera presets and Day / Sunset / Night controls.
 
 ## Evidence and interpretation
 
@@ -15,7 +15,7 @@ Implemented September 7, 2026 using the user-provided `summerfest_grounds_detail
 
 Day extinguishes the concert lights and all added emissive illumination. Sunset uses reduced warm path/counter lighting and stage washes; night increases these locally. Each venue has one nonshadow spotlight. Walkway pools share one instanced draw instead of introducing dozens of dynamic lights. Abstract LED graphics are original geometry; this is a festival-lighting interpretation, not a particular programmed show.
 
-The coarse DEM contains building and bridge returns. Terrain inside the park is blended toward an estimated 2.2 m apron with a 12 m boundary transition. This is a visualization grade, not a survey. Water and terrain outside the boundary remain unchanged. Ground-road vertices inside the park follow this corrected surface; HWAY decks are not modified. Building replacement uses exact source nodes/elevations, including courtyard edges, rather than deleting an entire rectangular area.
+The coarse DEM contains building and bridge returns. Terrain inside the park is blended toward an estimated 2.2 m apron with a 12 m boundary transition. A separate corridor follows the mapped freeway and Harbor exit centerlines to remove bridge returns beneath those structures, with a 40 m core and 45 m feather; the northern approach blends toward a 3.7 m grade. These are visualization grades, not survey elevations. The approach treatment only lowers high ground, excludes the harbor water, and preserves terrain outside the explicit correction footprint. Ground-road surfaces follow this corrected terrain while elevated ROAD decks and HWAY structures remain unchanged. Building replacement uses exact source nodes/elevations, including courtyard edges, rather than deleting an entire rectangular area.
 
 ## Verification
 
@@ -34,3 +34,14 @@ The coarse DEM contains building and bridge returns. Terrain inside the park is 
 The four additional user-supplied photographs (`raSmith-The-Aurora-Pavilion-1.jpg`, Laguna `N23` and `N17`, and `aurora-headliners800x500.jpg`) guide the dedicated `auroraPavilion.ts` model: two overlapping barrel roof sections, corrugated blue-gray metal, deep white triangular space framing, branching perimeter supports, a separate low stage canopy, corrugated stage enclosures, blue-roofed entrance concession wings and a navy digital sign tower. Seating now sits on a level floor under the roof, with an open entry passage and the mixing position behind the rows.
 
 The mapped 65 × 35 m roof footprint and east-facing stage back are preserved. The 12 m stage depth, roof elevations, concession dimensions and seating arrangement remain photo-based approximations; these photos do not provide a measured plan or definitive seat count. Lettering is original typesetting; no reference photo is used as a texture. Review the entrance and “Under the pavilion” views at 1×, including sunset/night illumination.
+
+
+## Roads and approach correction
+
+The September 7 road review used the [City of Milwaukee Lakefront Gateway completed-project summary](https://city.milwaukee.gov/AreaPlans/Downtown/Milwaukee-Lakefront-Gateway-Project.htm), the [official 2026 festival map](https://s3.summerfest.com/assets/images/maps/SF26_GroundsMap-Layered_050426.jpg), the supplied aerial context, and the cached OpenStreetMap street geometry. The City confirms the Lincoln Memorial Drive connection to Chicago Street, the Clybourn boulevard/extension, and the Harbor Drive pedestrian/bicycle plaza near the mid-gate. The festival map distinguishes the north, mid, and south gate approaches. These sources guide the separation of surface streets, pedestrian connections, and elevated freeway ramps; temporary event traffic controls are not modeled as permanent road changes.
+
+The previous festival adapter incorrectly treated every `ROAD` surface as ground-level pavement. Elevated freeway decks also live in that section; `HWAY` contains their supporting details. The revised adapter identifies ground-level triangles against the untouched source terrain, preserves elevated decks, and fits corrected pavement to the terrain grid and its diagonals. It retains the mapped horizontal alignments and widths. The standalone review now loads the southwest neighboring tile as well, avoiding abruptly cropped street context, and shares the main city's road/terrain adapters.
+
+The road review presets provide closer checks of Harbor Drive, the north connections, and Erie Street instead of relying only on a campus aerial. Geometry tests check actual shipped road tiles, elevated-road preservation, terrain clearance, and repeat application. These checks establish geometric consistency; this remains an interpreted model, not a surveyed road design.
+
+The corrected road surfaces also drive the street-light generator's final height pass: 58 nearby fixture/pool anchors were resampled and one invalid shoreline node omitted. The main model and the standalone review use the same terrain inputs and road fitting logic.

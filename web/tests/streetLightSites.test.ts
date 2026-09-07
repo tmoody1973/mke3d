@@ -2,9 +2,18 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { STREET_LIGHT_SITES, STREET_LIGHT_STATS } from '../src/streetLightSites.ts';
+import * as THREE from 'three';
+import {prepareSummerfestTerrain,adaptSummerfestTile} from '../src/summerfestSite.ts';
+import {prepareHoanTerrain} from '../src/hoanSite.ts';
+import {bilinearTerrainHeight,terrainHeight} from '../src/localTerrain.ts';
 
 test('placement provenance, district coverage, fixture families and bounded counts are explicit', () => {
   assert.equal(STREET_LIGHT_STATS.mappedNodesInExtract,3545);
+  assert.equal(STREET_LIGHT_SITES.length,1920);
+  assert.deepEqual(STREET_LIGHT_STATS.bySource,{'osm-node':705,'derived-road':1215});
+  assert.equal(STREET_LIGHT_STATS.terrainCorrections.resampled,58);
+  assert.deepEqual(STREET_LIGHT_STATS.terrainCorrections.rejectedBelowWater,['node-13747299353-460']);
+  assert.ok(!STREET_LIGHT_SITES.some(s=>s.id==='node-13747299353-460'));
   assert.equal(STREET_LIGHT_SITES.length,STREET_LIGHT_STATS.total);
   assert.ok(STREET_LIGHT_SITES.length>=1500&&STREET_LIGHT_SITES.length<=2200);
   assert.equal(new Set(STREET_LIGHT_SITES.map(s=>s.id)).size,STREET_LIGHT_SITES.length);
@@ -42,16 +51,13 @@ test('all poles keep minimum spacing and known museum fixtures are not duplicate
   }
 });
 
-function terrainSampler(){
+function terrainData(){
   const bytes=readFileSync(new URL('../public/data/terrain.bin',import.meta.url));
   const nx=bytes.readUInt32LE(4),ny=bytes.readUInt32LE(8),x0=bytes.readFloatLE(12),y0=bytes.readFloatLE(16),step=bytes.readFloatLE(20);
-  return(x:number,z:number)=>{
-    const fx=(x-x0)/step,fy=(-z-y0)/step,i=Math.max(0,Math.min(nx-2,Math.floor(fx))),j=Math.max(0,Math.min(ny-2,Math.floor(fy)));
-    const u=Math.max(0,Math.min(1,fx-i)),v=Math.max(0,Math.min(1,fy-j));
-    const[a,b,c,d]=[j*nx+i,j*nx+i+1,(j+1)*nx+i,(j+1)*nx+i+1].map(k=>bytes.readFloatLE(24+k*4));
-    return v>=u?a*(1-v)+c*(v-u)+d*u:a*(1-u)+b*(u-v)+d*v;
-  };
+  return {nx,ny,x0,y0,step,heights:new Float32Array(bytes.buffer.slice(bytes.byteOffset+24,bytes.byteOffset+24+nx*ny*4)),colors:new Uint8Array(nx*ny*3)};
 }
+const rawTerrain=terrainData(),correctedTerrain=prepareSummerfestTerrain(prepareHoanTerrain(rawTerrain));
+function terrainSampler(){return (x:number,z:number)=>terrainHeight(correctedTerrain,x,z);}
 
 type Triangle=readonly[number,number,number,number,number,number,number,number,number];
 function roadSampler(){
@@ -61,18 +67,27 @@ function roadSampler(){
     if(!tiles.has(key)){
       const grid=new Map<string,Triangle[]>();tiles.set(key,grid);
       const bytes=readFileSync(new URL(`../public/data/tiles/t_${key}.bin`,import.meta.url));let offset=12;
+      const group=new THREE.Group();
       for(let section=0;section<bytes.readUInt32LE(8);section++){
         const name=bytes.subarray(offset,offset+4).toString().trim(),count=bytes.readUInt32LE(offset+4);
         const origin=[8,12,16].map(n=>bytes.readFloatLE(offset+n)),scale=bytes.readFloatLE(offset+20);offset+=24;
-        if(name==='ROAD')for(let triangle=0;triangle<count/3;triangle++){
-          const p=Array.from({length:9},(_,n)=>bytes.readInt16LE(offset+(triangle*9+n)*2)*scale+origin[n%3]) as unknown as Triangle;
+        if(name==='ROAD'){
+          const positions=new Float32Array(count*3);for(let n=0;n<positions.length;n++)positions[n]=bytes.readInt16LE(offset+n*2)*scale+origin[n%3];
+          const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));const mesh=new THREE.Mesh(geometry);mesh.name='ROAD';group.add(mesh);
+        }
+        offset=Math.ceil((offset+count*6)/4)*4;offset=Math.ceil((offset+count*3)/4)*4;
+      }
+      adaptSummerfestTile(group,{i:Math.floor(x/2000),j:Math.floor(-z/2000)},(x,z)=>bilinearTerrainHeight(correctedTerrain,x,z),rawTerrain,correctedTerrain);
+      for(const mesh of group.children as THREE.Mesh[]){
+        const position=mesh.geometry.getAttribute('position');
+        for(let triangle=0;triangle<position.count/3;triangle++){
+          const p=Array.from({length:9},(_,n)=>position.array[triangle*9+n]) as unknown as Triangle;
           const minX=Math.floor(Math.min(p[0],p[3],p[6])/20),maxX=Math.floor(Math.max(p[0],p[3],p[6])/20);
           const minZ=Math.floor(Math.min(p[2],p[5],p[8])/20),maxZ=Math.floor(Math.max(p[2],p[5],p[8])/20);
           for(let i=minX;i<=maxX;i++)for(let j=minZ;j<=maxZ;j++){
             const k=`${i},${j}`;if(!grid.has(k))grid.set(k,[]);grid.get(k)!.push(p);
           }
         }
-        offset=Math.ceil((offset+count*6)/4)*4;offset=Math.ceil((offset+count*3)/4)*4;
       }
     }
     const hits:number[]=[];
@@ -85,13 +100,13 @@ function roadSampler(){
   };
 }
 
-test('pole feet and offset light pools reproduce actual shipped terrain or ROAD surfaces', () => {
+test('pole feet and offset light pools reproduce the shared corrected terrain or ROAD surfaces', () => {
   const terrain=terrainSampler(),road=roadSampler();
   for(const site of STREET_LIGHT_SITES){
     for(const[x,y,z]of [[site.x,site.y,site.z],[site.poolX,site.poolY-.025,site.poolZ]]){
       const t=terrain(x,z),hits=road(x,z).filter(h=>Math.abs(h-t)<1.8);
       const surfaces=[t,...hits];
-      assert.ok(surfaces.some(h=>Math.abs(h-y)<.012),`${site.id} floats above/below original surface at ${x},${z}: y=${y}, surfaces=${surfaces}`);
+      assert.ok(surfaces.some(h=>Math.abs(h-y)<.012),`${site.id} floats above/below corrected surface at ${x},${z}: y=${y}, surfaces=${surfaces}`);
     }
   }
 });

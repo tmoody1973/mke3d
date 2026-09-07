@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as THREE from 'three';
 import {buildSummerfest} from '../src/summerfest.ts';
-import {SUMMERFEST_VENUES,adaptSummerfestTile,prepareSummerfestTerrain,withinSummerfest} from '../src/summerfestSite.ts';
+import {SUMMERFEST_VENUES,adaptSummerfestTile,prepareSummerfestTerrain,withinSummerfest,summerfestApproachTerrainWeight} from '../src/summerfestSite.ts';
 function parseSections(buffer:ArrayBuffer){
  const bytes=new Uint8Array(buffer),view=new DataView(buffer),sections:{name:string;positions:Float32Array}[]=[];let offset=12;
  for(let s=0;s<view.getUint32(8,true);s++){
@@ -30,10 +30,10 @@ test('night and sunset light the campus, and day extinguishes every venue light'
  model.userData.setLightingMode('day');assert.ok(lights.every(l=>l.intensity===0));assert.equal(model.getObjectByName('warm-walkway-light-pools')!.visible,false);
  model.traverse(o=>{if(o instanceof THREE.Mesh){const ms=Array.isArray(o.material)?o.material:[o.material];for(const m of ms)if(m instanceof THREE.MeshStandardMaterial)assert.equal(m.emissiveIntensity*m.emissive.getHex(),0);}});
 });
-test('terrain correction is immutable and confined to the festival boundary',()=>{
+test('terrain correction is immutable and confined to the festival and mapped freeway approaches',()=>{
  const base={nx:60,ny:120,x0:250,y0:-1050,step:10,heights:new Float32Array(7200).fill(15),colors:new Uint8Array(21600)};
  const result=prepareSummerfestTerrain(base);let changed=0;
- for(let j=0;j<base.ny;j++)for(let i=0;i<base.nx;i++){const k=j*base.nx+i;assert.equal(base.heights[k],15);if(result.heights[k]!==15){changed++;assert.ok(withinSummerfest(base.x0+i*10,-base.y0-j*10));assert.ok(result.heights[k]>=2.19);}}
+ for(let j=0;j<base.ny;j++)for(let i=0;i<base.nx;i++){const k=j*base.nx+i;assert.equal(base.heights[k],15);if(result.heights[k]!==15){changed++;assert.ok(withinSummerfest(base.x0+i*10,-base.y0-j*10)||summerfestApproachTerrainWeight(base.x0+i*10,-base.y0-j*10)>0);assert.ok(result.heights[k]>=2.19);}}
  assert.ok(changed>100);assert.equal(result.colors,base.colors);
 });
 test('packed tile replacement preserves highways and unrelated building triangles',()=>{

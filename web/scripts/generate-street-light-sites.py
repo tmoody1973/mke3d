@@ -4,7 +4,7 @@ Run from the repository root: pipeline/.venv/bin/python web/scripts/generate-str
 --check validates the existing generated module against all original inputs without writing.
 """
 from pathlib import Path
-import collections, hashlib, json, math, re, struct, sys
+import collections, hashlib, json, math, re, struct, sys, subprocess
 import osmium
 from shapely.geometry import Point, LineString, Polygon, box
 from shapely.strtree import STRtree
@@ -188,11 +188,65 @@ for road in sorted(roads,key=road_priority):
             add(x,z,road,'derived-road',road['id'],minimum)
             if river and len(sites)>prior:break
         d+=spacing
+# Preserve the source placement/filter pass above. Only height anchors change
+# when the viewer removes DEM bridge returns. Reuse its actual TypeScript
+# correction/tessellation code rather than maintaining a divergent Python copy.
+height_result = subprocess.run(['node','--input-type=module','-e',r'''
+import fs from 'node:fs';
+import * as THREE from 'three';
+import {prepareSummerfestTerrain,adaptSummerfestTile} from './src/summerfestSite.ts';
+import {prepareHoanTerrain} from './src/hoanSite.ts';
+import {bilinearTerrainHeight,terrainHeight} from './src/localTerrain.ts';
+const sites=JSON.parse(fs.readFileSync(0,'utf8'));
+const b=fs.readFileSync('./public/data/terrain.bin'),d=new DataView(b.buffer,b.byteOffset,b.byteLength),nx=d.getUint32(4,true),ny=d.getUint32(8,true);
+const raw={nx,ny,x0:d.getFloat32(12,true),y0:d.getFloat32(16,true),step:d.getFloat32(20,true),heights:new Float32Array(b.buffer.slice(b.byteOffset+24,b.byteOffset+24+nx*ny*4)),colors:new Uint8Array(nx*ny*3)};
+const corrected=prepareSummerfestTerrain(prepareHoanTerrain(raw)),groundAt=(x,z)=>bilinearTerrainHeight(corrected,x,z),tiles=new Map();
+function gridAt(x,z){
+ const ti=Math.floor(x/2000),tj=Math.floor(-z/2000),key=`${ti}_${tj}`;if(tiles.has(key))return tiles.get(key);
+ const b=fs.readFileSync(`./public/data/tiles/t_${key}.bin`),d=new DataView(b.buffer,b.byteOffset,b.byteLength),group=new THREE.Group();let offset=12;
+ for(let s=0;s<d.getUint32(8,true);s++){
+  const name=b.toString('ascii',offset,offset+4),count=d.getUint32(offset+4,true),origin=[8,12,16].map(k=>d.getFloat32(offset+k,true)),scale=d.getFloat32(offset+20,true);offset+=24;
+  if(name==='ROAD'){
+   const positions=new Float32Array(count*3);for(let k=0;k<positions.length;k++)positions[k]=d.getInt16(offset+k*2,true)*scale+origin[k%3];
+   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));const mesh=new THREE.Mesh(geometry);mesh.name=name;group.add(mesh);
+  }offset=Math.ceil((offset+count*6)/4)*4;offset=Math.ceil((offset+count*3)/4)*4;
+ }
+ adaptSummerfestTile(group,{i:ti,j:tj},groundAt,raw,corrected);
+ const grid=new Map();for(const mesh of group.children){const p=mesh.geometry.getAttribute('position');for(let k=0;k<p.count;k+=3){
+  const tri=[0,1,2].map(n=>[p.getX(k+n),p.getY(k+n),p.getZ(k+n)]),xs=tri.map(p=>p[0]),zs=tri.map(p=>p[2]);
+  for(let i=Math.floor(Math.min(...xs)/20);i<=Math.floor(Math.max(...xs)/20);i++)for(let j=Math.floor(Math.min(...zs)/20);j<=Math.floor(Math.max(...zs)/20);j++){
+   const key=`${i},${j}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(tri);
+  }
+ }}tiles.set(key,grid);return grid;
+}
+function surface(x,z){
+ const t=terrainHeight(corrected,x,z),hits=[];
+ for(const [[ax,ay,az],[bx,by,bz],[cx,cy,cz]] of gridAt(x,z).get(`${Math.floor(x/20)},${Math.floor(z/20)}`)??[]){
+  const den=(bz-cz)*(ax-cx)+(cx-bx)*(az-cz);if(Math.abs(den)<1e-9)continue;
+  const u=((bz-cz)*(x-cx)+(cx-bx)*(z-cz))/den,v=((cz-az)*(x-cx)+(ax-cx)*(z-cz))/den,y=u*ay+v*by+(1-u-v)*cy;
+  if(Math.min(u,v,1-u-v)>=-1e-7&&Math.abs(y-t)<1.8)hits.push(y);
+ }const y=Math.max(t,...hits);return [y,hits.some(h=>h>=t)?'road':'terrain'];
+}
+let adjusted=0;const belowWater=[];
+for(const site of sites){
+ const changed=([x,z])=>Math.abs(terrainHeight(corrected,x,z)-terrainHeight(raw,x,z))>.001;
+ if(![[site.x,site.z],[site.poolX,site.poolZ]].some(changed))continue;
+ const [y,basis]=surface(site.x,site.z),[poolY]=surface(site.poolX,site.poolZ);
+ if(y<-.1){belowWater.push(site.id);continue;}
+ site.y=+y.toFixed(3);site.surface=basis;site.poolY=+(poolY+.025).toFixed(3);adjusted++;
+}
+process.stdout.write(JSON.stringify({sites:sites.filter(s=>!belowWater.includes(s.id)),adjusted,belowWater}));
+'''],cwd=ROOT/'web',input=json.dumps(sites),text=True,capture_output=True,check=True)
+height_result=json.loads(height_result.stdout)
+sites=height_result['sites']
+rejections['corrected-below-water-datum']+=len(height_result['belowWater'])
+print(f"Resampled {height_result['adjusted']} fixtures against shared Summerfest/Hoan terrain and road geometry.",flush=True)
 # Compact metadata: evidence and exclusions are auditable without implying survey completeness.
-stats={'version':1,'snapshot':'2026-09-06','mappedNodesInExtract':len(nodes),'mappedNodesInStudyArea':node_study,'total':len(sites),
+stats={'version':2,'snapshot':'2026-09-06','mappedNodesInExtract':len(nodes),'mappedNodesInStudyArea':node_study,'total':len(sites),
        'bySource':dict(collections.Counter(s['source']for s in sites)),'byKind':dict(collections.Counter(s['kind']for s in sites)),
        'byDistrict':dict(collections.Counter(s['district']for s in sites)),'bySurface':dict(collections.Counter(s['surface']for s in sites)),
        'rejected':dict(rejections),'gapFillLimits':GAP_LIMITS,'derivedSpacingM':{'downtownMast':30,'thirdWardHeritage':20,'thirdWardRiverwalk':8,'stadiumCampus':42,'plazaEvent':20},'minimumSpacingM':8,'buildingClearanceM':.75,'maxTotal':2200,
+       'terrainCorrections':{'resampled':height_result['adjusted'],'rejectedBelowWater':height_result['belowWater'],'method':'shared Summerfest/Hoan terrain and ROAD geometry'},
        'attribution':'© OpenStreetMap contributors, ODbL 1.0; positions derive from the local Geofabrik extract. Fixture profiles and gap fill are interpretive.',
        'rawSha256':hashlib.sha256(RAW.read_bytes()).hexdigest(),'pbfSha256':hashlib.sha256((ROOT/'data/raw/milwaukee.osm.pbf').read_bytes()).hexdigest()}
 assert len(sites)<=2200
@@ -201,7 +255,8 @@ header='''/** Generated by web/scripts/generate-street-light-sites.py from the s
  * Fixture families are district interpretations, not a surveyed municipal asset inventory.
  * heading rotates local +Z toward the mapped public path/road centerline.
  * y is the actual pole-foot surface; poolX/Z locate the illuminated patch and
- * poolY is its sampled surface plus a 0.025 m display lift.
+ * poolY is its sampled surface plus a 0.025 m display lift. Shared Summerfest/Hoan
+ * terrain corrections resample heights; below-water fixtures are omitted.
  */
 export type StreetLightKind = 'downtownMast' | 'thirdWardHeritage' | 'thirdWardRiverwalk' | 'stadiumCampus' | 'plazaEvent';
 export type StreetLightDistrict = 'downtown' | 'thirdWard' | 'riverwalk' | 'wisconsinAvenue' | 'stadium' | 'landmarkCorridors';

@@ -2,23 +2,28 @@ import * as THREE from 'three';
 import {createCity,type Mode} from './scene';
 import {fetchBuffer,parseTerrain,parseSections,sectionToGeometry} from './loader';
 import {bilinearTerrainHeight} from './localTerrain';
-import {prepareHoanTerrain,prepareHoanWater} from './hoanSite';
+import {prepareHoanTerrain,prepareHoanWater,adaptHoanContextTile} from './hoanSite';
 import {prepareSummerfestTerrain,adaptSummerfestTile} from './summerfestSite';
 import {buildSummerfest} from './summerfest';
 const city=createCity(document.querySelector('canvas')!,document.querySelector('#labels')!,false);
-const terrain=prepareSummerfestTerrain(prepareHoanTerrain(parseTerrain(await fetchBuffer('/data/terrain.bin'))));
+const rawTerrain=parseTerrain(await fetchBuffer('/data/terrain.bin'));
+const terrain=prepareSummerfestTerrain(prepareHoanTerrain(rawTerrain));
 const groundAt=(x:number,z:number)=>bilinearTerrainHeight(terrain,x,z);
 city.addTerrain(terrain);city.addWater(prepareHoanWater(parseSections(await fetchBuffer('/data/water.bin'))));
 const model=buildSummerfest(groundAt);city.landmarks.add(model);
-for(const [i,j] of [[0,0],[0,-1],[-1,0]]){
+for(const [i,j] of [[0,0],[0,-1],[-1,0],[-1,-1]]){
  const g=new THREE.Group();
  for(const section of parseSections(await fetchBuffer(`/data/tiles/t_${i}_${j}.bin`))){
   if(!['ROAD','HWAY','BLDG'].includes(section.name))continue;
   const mesh=new THREE.Mesh(sectionToGeometry(section),section.name==='BLDG'?city.mats.building:city.mats.road);mesh.name=section.name;mesh.castShadow=section.name==='BLDG';mesh.receiveShadow=true;g.add(mesh);
  }
- adaptSummerfestTile(g,{i,j},groundAt);city.tiles.add(g);
+ adaptSummerfestTile(g,{i,j},groundAt,rawTerrain,terrain);
+ adaptHoanContextTile(g,{i,j},rawTerrain,groundAt);city.tiles.add(g);
 }
 const views:Record<string,{eye:[number,number,number];target:[number,number,number]}>= {
+ harbor:{eye:[215,95,390],target:[405,5,350]},
+ gateway:{eye:[155,125,-135],target:[400,5,-25]},
+ erie:{eye:[290,55,1045],target:[505,4,970]},
  aurora:{eye:[465,19,205],target:[538,9,165]},
  auroraInterior:{eye:[514,6,165],target:[564,5,165]},
  aerial:{eye:[1150,580,1100],target:[540,5,430]},
