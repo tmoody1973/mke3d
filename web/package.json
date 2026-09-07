@@ -17,6 +17,7 @@
     "test:market": "node --test tests/publicMarket.test.ts tests/publicMarketSite.test.ts",
     "test:cityhall": "node --test tests/cityHall.test.ts tests/cityHallSite.test.ts",
     "preview": "vite preview",
+    "test:bmo": "node --test tests/bmo*.test.ts",
     "test:museum": "node --test tests/museum.test.ts tests/museumSite.test.ts tests/museumCampus.test.ts tests/lakefrontContext.test.ts tests/museumLandscape.test.ts",
     "test:domes": "node --test tests/domes.test.ts tests/domesSite.test.ts",
     "test:amfam": "node --test tests/amfam*.test.ts",

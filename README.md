@@ -68,7 +68,7 @@ The destination board includes **27 landmarks and districts**, with walking acce
 
 The original twelve locations were checked against OpenStreetMap on 2026-09-06 (`pipeline/verify_landmarks.py`, results in `data/landmarks_nominatim.json`). Later models use cached source footprints and documented visual references. Dedicated geometry remains interpretive: documented dimensions are distinguished from estimated heights, facade details, landscaping, and lighting in each model's reference notes below.
 
-Building signs use official U.S. Bank, Baird, and BMO logo assets (see `web/public/signs/SOURCES.md`). U.S. Bank Center and BMO Tower locations come from the named footprints in the cached OSM extract. Signs mount against actual full-detail tile walls, unload with those buildings, scale with height exaggeration, and illuminate in night mode. The logo artwork is authentic; dimensions, mounting details, and placement are approximate. U.S. Bank is shown on the east/west faces, Baird on north/south, and BMO on the confirmed west face. Focused landmark views hide other labels until the detail panel is closed.
+Building signs use official U.S. Bank, Baird, and BMO logo assets (see `web/public/signs/SOURCES.md`). The detailed landmark models own their facade-mounted signs and illuminate them in night mode. Authentic artwork is used; sign dimensions and mounting positions remain approximate. Focused landmark views hide other labels until the detail panel is closed.
 
 ## Known limitations
 
@@ -204,3 +204,7 @@ The surrounding road repair removes false bridge-height terrain humps along the 
 [Summerfest review](https://mke3d.vercel.app/summerfest-review.html) · [Skyglider close-up](https://mke3d.vercel.app/summerfest-review.html?view=northTerminal) · [Grounds and road references](docs/summerfest-reference.md) · [Skyglider evidence and estimates](docs/skyglider-reference.md)
 
 Run `npm run test:summerfest` from `web/` for the venue, road, and Skyglider checks. These tests cover geometry and behavior; visual comparison with the cited references remains a separate check.
+
+### BMO Tower
+
+The [BMO Tower review](https://mke3d.vercel.app/bmo-review.html) shows the new 790 North Water Street tower from Water, Wells, Broadway, the lobby, and the roof terraces. The model replaces the generic footprint while preserving the older bank next door. It uses the owner’s 328-foot height and mapped base, with two glass volumes, the rounded City Hall corner, parking screens, retail entrances, crown signs and sunset/night illumination. The sloping street levels are retained. Fine facade dimensions and planting are interpreted from the architect’s photographs and owner plans; see [BMO reference notes](docs/bmo-tower-reference.md). Run `npm run test:bmo` from `web/`.

@@ -1,3 +1,4 @@
+import { buildBmoTower } from './bmoTower';
 import { buildRave } from './rave';
 import { RAVE_SITE } from './raveSite';
 import { buildSaintKate } from './saintKate';
@@ -63,8 +64,8 @@ export const LANDMARKS: Landmark[] = [
     blurb: 'The lakefront residential tower above The Hop’s transit concourse. Curved glass facades, pale floor bands and a stepped crown rise above the open streetcar hall and parking podium. Footprints follow mapped building parts; height and fine details are photo-based approximations.' },
   { id: 'nm', name: 'Northwestern Mutual Tower', lat: 43.04, lon: -87.90028, osm: 'way/392821857', view: [330, 120, 16], labelHeight: 174, focusHeight: 80, interpretive: true,
     blurb: 'The 32-story Tower and Commons, completed in 2017. A curved glass facade and crisp prow rise 169 meters above the lakefront campus, beside the low Commons and historic headquarters. Mapped building parts guide its footprint; facade details, signage and night occupancy are illustrative.' },
-  { id: 'bmo', name: 'BMO Tower', lat: 43.0408146, lon: -87.9088259, osm: 'way/592527373', view: [220, 265, 25], labelHeight: 115, focusHeight: 85,
-    blurb: 'The 25-story BMO Tower on North Water Street, with a BMO sign on its west-facing facade. Logo placement is approximate.' },
+  { id: 'bmo', name: 'BMO Tower', lat: 43.0408146, lon: -87.9088259, osm: 'way/592527373', view: [220, 265, 25], labelHeight: 108, focusHeight: 48, interpretive: true,
+    blurb: 'Kahler Slater’s 25-story glass tower at Water and Wells, with split massing, a rounded City Hall corner, an eight-level parking podium and street retail. Height follows the owner’s 328-foot specification; facade and landscape details are interpreted from plans and photographs.' },
   { id: 'mam', name: 'Milwaukee Art Museum', lat: 43.0392813, lon: -87.8970116, osm: 'way/403894584', view: [245, 245, 24], labelHeight: 62, focusHeight: 20, interpretive: true,
     blurb: 'Santiago Calatrava’s Quadracci Pavilion (2001) with the Burke Brise Soleil, a movable sunscreen whose 217-foot wingspan opens and closes daily over the lakefront.' },
   { id: 'warmemorial', name: 'War Memorial Center', lat: 43.0404985801, lon: -87.8972942587, osm: 'way/403895414', view: [170, 285, 28], labelHeight: 32, focusHeight: 12,
@@ -108,6 +109,8 @@ export function buildInterpretive(manifest: Manifest, geo: LandmarkGeo, groundAt
   const cityHall = buildCityHall();
   cityHall.position.set(CITY_HALL_SITE.x, CITY_HALL_SITE.floor, CITY_HALL_SITE.z);
   cityHall.rotation.y = CITY_HALL_SITE.bearing; g.add(cityHall);
+
+  g.add(buildBmoTower(groundAt));
 
   // Museum, memorial, bridge, raised park and garage form one connected lakefront campus.
   g.add(buildMuseumCampus(groundAt), buildReimanBridge(groundAt), buildLakefrontContext(groundAt), buildMuseumLandscape(groundAt));

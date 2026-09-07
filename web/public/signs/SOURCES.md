@@ -24,3 +24,5 @@ All names, logos, and trademarks remain the property of their respective owners.
 retrieved September 7, 2026. White lettering changed to the orange finish shown
 on the user's exterior signage photograph; vector paths and proportions retained.
 Trademark belongs to its owner; used only to identify the modeled arena.
+
+- `bmo-white.svg` preserves the paths of `bmo.svg`, with the blue BMO lettering rendered white to match the tower-mounted signs in Kahler Slater’s built photographs. The red roundel and white emblem are unchanged.
