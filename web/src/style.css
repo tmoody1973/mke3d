@@ -111,3 +111,5 @@ body.driving #map-navigation-help{display:none}
 .drive-tours .drive-rate-label{display:flex;align-items:center;gap:12px;margin-top:10px;letter-spacing:0;color:#d0dcde}.drive-rate-label select{flex:1;width:auto;margin:0}
 @media(max-width:760px){.drive-tours{top:175px;right:10px;width:235px;padding:10px}.drive-tours select{min-height:32px}.drive-tour-buttons button{min-height:34px}#drive-tour-info{font-size:11px;min-height:0}}
 @media(max-height:620px){.drive-tours{top:70px;width:260px;padding:8px}#drive-tour-info{margin:4px 0;min-height:0}.drive-tours .drive-rate-label{margin-top:5px}}
+
+#landmark-walk{display:block;width:100%;min-height:44px;margin:12px 0;padding:10px 12px;border:0;border-radius:6px;background:var(--dark);color:var(--cream);font:inherit;font-weight:600;cursor:pointer}#landmark-walk:hover{background:#3e555f}

@@ -112,6 +112,12 @@ Run `npm run test:signs` from `web/` to verify outward facade mounting, corner c
 
 The Hoan's architectural lighting follows the blue arch outlines, warm gold vertical members, and spaced blue deck fixtures in [Signify's installation photographs](https://www.signify.com/en-us/our-company/news/press-releases/2025/20250708-signify-color-kinetics-architectural-led-luminiaries-activated-east-side-milwaukee-hoan-bridge). Both sides are represented: the west side opened in 2020 and the harbor-facing east side in 2025. Fixtures follow the model's actual steel and deck paths, switch off during Day, and illuminate at reduced intensity in Sunset and full intensity in Night. This is a static interpretation of one photographed color scheme; fixture spacing is approximate and it does not reproduce the bridge's live programmable shows or cast reflections onto the water. Two batched draws keep the lighting inexpensive. `npm run test:hoan` also checks lighting modes and fixture geometry.
 
+## Explore landmarks on foot
+
+Select any landmark and choose **Walk around this landmark**, or use **Street view · walk around** on the destination board. The walking menu includes all 20 landmarks and the current map area. The camera starts 1.7 m above supported ground, facing the selected landmark; building collisions and water checks remain active.
+
+Use **WASD** or the on-screen arrows to move, drag to look around and up, and hold **Shift** for a brisk pace. **Back to start** restores your starting point; **Esc / Back to map** restores the aerial view. You can change landmarks and day/sunset/night lighting without leaving walking mode.
+
 ## Street geometry checks
 
 Run `pipeline/.venv/bin/python pipeline/test_roads.py` to check road widths, preserved bends, tile boundaries, terrain subdivision, and bridge approach continuity. Run `pipeline/.venv/bin/python pipeline/rebuild_roads.py` to regenerate street sections from cached source data and terrain; it preserves building sections byte for byte. The full pipeline uses the same road builder.

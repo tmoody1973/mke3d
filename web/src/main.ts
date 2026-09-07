@@ -310,19 +310,27 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
     onExit(){syncDrawerLayout();refocus();},
     prefetch(x,z){tiles.update(x,z);}
   });
-  const walkPlaces = [
-    {id:'fiserv',name:'Deer District',dx:132,dz:15},
-    {id:'thirdward',name:'Historic Third Ward',dx:20,dz:20},
-    {id:'market',name:'Public Market',dx:-35,dz:25},
-    {id:'mam',name:'Lakefront & Museum Campus',dx:-65,dz:50},
-    {id:'newmuseum',name:'Nature & Culture Museum',dx:-45,dz:40},
-  ].map(place=>{const landmark=LANDMARKS.find(l=>l.id===place.id)!;const p=locate(landmark);return{id:place.id,name:place.name,x:p.x+place.dx,z:p.z+place.dz,lookX:p.x,lookZ:p.z};});
+  // Start beside landmarks, then let the walking world's dry-ground and
+  // collision checks find the nearest supported foot position.
+  const walkOffsets:Record<string,[number,number]>={
+    fiserv:[132,15],thirdward:[20,20],market:[-35,25],mam:[-65,50],
+    newmuseum:[-45,40],amfam:[-155,-130],usbank:[-70,50],couture:[-45,45],
+    nm:[-60,60],warmemorial:[-45,0],discovery:[-65,0],lighthouse:[20,25],
+  };
+  const walkPlaces=LANDMARKS.map(landmark=>{
+    const p=locate(landmark),angle=landmark.view[1]*Math.PI/180;
+    const distance=Math.max(35,Math.min(160,landmark.view[0]*.32));
+    const [dx,dz]=walkOffsets[landmark.id]??[Math.sin(angle)*distance,-Math.cos(angle)*distance];
+    return{id:landmark.id,name:landmark.name,x:p.x+dx,z:p.z+dz,lookX:p.x,lookZ:p.z};
+  });
   walking=createWalkingMode({city,canvas,places:walkPlaces,
+    preferredPlace:()=>selectedLabelId,
     onEnter(){driving?.stop();hop?.close();director.stopTour();director.cancelFlight();syncTourBtn();panel.hidden=true;closeDrawer();},
     onExit(){syncDrawerLayout();refocus();},
     prefetch(x,z){tiles.update(x,z);},
     setLighting(mode){document.querySelector<HTMLButtonElement>(`button[data-mode="${mode}"]`)?.click();},
   });
+  $('#landmark-walk').addEventListener('click',()=>walking?.start(selectedLabelId));
   import.meta.hot?.dispose(() => {hop?.dispose();driving?.dispose();walking?.dispose();});
   (window as unknown as { __MKE3D_STATE__: object }).__MKE3D_STATE__ = { city, director, landmarks: LANDMARKS, landmarkButtons };
 

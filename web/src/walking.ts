@@ -3,12 +3,12 @@ import type { City, Mode } from './scene';
 import { createWalkingWorld } from './walkingWorld';
 
 type Place={id:string;name:string;x:number;z:number;lookX:number;lookZ:number};
-type Options={city:City;canvas:HTMLCanvasElement;places:Place[];prefetch(x:number,z:number):void;onEnter():void;onExit():void;setLighting(mode:Mode):void};
+type Options={city:City;canvas:HTMLCanvasElement;places:Place[];prefetch(x:number,z:number):void;onEnter():void;onExit():void;setLighting(mode:Mode):void;preferredPlace?():string|undefined};
 type Position={x:number;y:number;z:number};
 const movementKeys=new Set(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown','ShiftLeft','ShiftRight','KeyR','KeyV','Escape']);
 
 /** Pedestrian camera ownership is exclusive; leaving restores the previous map pose. */
-export function createWalkingMode({city,canvas,places,prefetch,onEnter,onExit,setLighting}:Options){
+export function createWalkingMode({city,canvas,places,prefetch,onEnter,onExit,setLighting,preferredPlace}:Options){
  const world=createWalkingWorld(city.tiles,city.city);
  const element=<T extends HTMLElement>(id:string)=>document.querySelector<T>(`#${id}`)!;
  const hud=element('walk-hud'),startButton=element<HTMLButtonElement>('walk-start');
@@ -39,15 +39,17 @@ export function createWalkingMode({city,canvas,places,prefetch,onEnter,onExit,se
   const dx=pending.lookX-point.x,dz=pending.lookZ-point.z;
   yaw=Math.hypot(dx,dz)>2?Math.atan2(-dx,-dz):yaw;checkpointYaw=yaw;
   pitch=.08;pending=undefined;distance=0;distanceLabel.textContent='0 m explored';
-  camera();text('On foot · drag to look around and up');
+  camera();text(`On foot · ${places.find(p=>p.id===district.value)?.name??'Current map area'} · drag to look around`);
  }
  function requestPlace(){
   clearInput();pending=places.find(p=>p.id===district.value)??currentPlace;
   position=undefined;checkpoint=undefined;spawnElapsed=0;retryElapsed=0;
   prefetch(pending.x,pending.z);text('Loading a place to walk…');trySpawn();
  }
- function start(){
-  if(active)return;
+ function start(placeId?:string){
+  const destination=placeId??preferredPlace?.();
+  if(destination&&places.some(p=>p.id===destination))district.value=destination;
+  if(active){if(destination)requestPlace();return;}
   onEnter();
   previous={eye:city.camera.position.clone(),target:city.controls.target.clone(),near:city.camera.near,fov:city.camera.fov,exaggeration:city.exaggeration};
   const target=city.controls.target;
@@ -72,7 +74,7 @@ export function createWalkingMode({city,canvas,places,prefetch,onEnter,onExit,se
   if(checkpoint){position={...checkpoint};yaw=checkpointYaw;pitch=.08;prefetch(position.x,position.z);camera();text('Returned to your starting point');}
   else requestPlace();
  }
- listen(startButton,'click',start);listen(element('walk-exit'),'click',stop);
+ listen(startButton,'click',()=>start());listen(element('walk-exit'),'click',stop);
  listen(element('walk-reset'),'click',()=>{reset();canvas.focus({preventScroll:true});});
  listen(element('walk-level'),'click',()=>{pitch=0;camera();canvas.focus({preventScroll:true});});
  listen(district,'change',()=>{requestPlace();canvas.focus({preventScroll:true});});
@@ -113,7 +115,7 @@ export function createWalkingMode({city,canvas,places,prefetch,onEnter,onExit,se
    if(pending){
     spawnElapsed+=elapsed;retryElapsed+=elapsed;
     if(retryElapsed>.75){trySpawn();retryElapsed=0;}
-    if(pending&&spawnElapsed>20){pending=undefined;text('No clear ground here yet · choose a district or press R to retry');}
+    if(pending&&spawnElapsed>20){pending=undefined;text('No clear ground here yet · choose a place or press R to retry');}
     return;
    }
    if(!position)return;
