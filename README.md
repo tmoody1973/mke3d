@@ -114,7 +114,7 @@ The Hoan's architectural lighting follows the blue arch outlines, warm gold vert
 
 ## Explore landmarks on foot
 
-Select any landmark and choose **Walk around this landmark**, or use **Street view · walk around** on the destination board. The walking menu includes all 21 landmarks and the current map area. The camera starts 1.7 m above supported ground, facing the selected landmark; building collisions and water checks remain active.
+Select any landmark and choose **Walk around this landmark**, or use **Street view · walk around** on the destination board. The walking menu includes all 23 landmarks and the current map area. The camera starts 1.7 m above supported ground, facing the selected landmark; building collisions and water checks remain active.
 
 Use **WASD** or the on-screen arrows to move, drag to look around and up, and hold **Shift** for a brisk pace. **Back to start** restores your starting point; **Esc / Back to map** restores the aerial view. You can change landmarks and day/sunset/night lighting without leaving walking mode.
 
@@ -161,3 +161,7 @@ Milwaukee Public Market now follows its mapped footprint with TKWA photo referen
 ### Turner Hall Ballroom
 
 Turner Hall now has a mapped exterior model with cream/red masonry, arched windows, twin gables, central dormered roof tower, north addition and side fire escapes. Select **Turner Hall Ballroom** to fly there or walk around it. [Model review](https://mke3d.vercel.app/turner-hall-review.html). Architecture and height details are photo-based estimates; see `docs/turner-hall-reference.md`.
+
+### Pabst and Riverside theaters
+
+Both theaters now have detailed exterior models, landmark labels and walking destinations. Pabst includes the Wells Street iron porch, ornate masonry, balcony, mansard roofs and two-sided blade signs. Riverside includes the complete mapped Empire Building, Wisconsin Avenue entrance, projecting bulb-lit marquee and red vertical blade. [Pabst review](https://mke3d.vercel.app/pabst-review.html) · [Riverside review](https://mke3d.vercel.app/riverside-review.html). See `docs/theaters-reference.md` for sources and modeling limits.
