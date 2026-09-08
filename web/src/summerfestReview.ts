@@ -54,7 +54,7 @@ const views:Record<string,{eye:[number,number,number];target:[number,number,numb
 };
 function view(key:string){ride.stop();const v=views[key];city.camera.position.fromArray(v.eye);city.controls.target.fromArray(v.target);city.controls.update();document.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.angle===key)));}
 document.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.onclick=()=>view(b.dataset.angle!));
-document.querySelector('nav select')!.onchange=e=>{const mode=(e.target as HTMLSelectElement).value.toLowerCase() as Mode;city.setMode(mode);model.userData.setLightingMode(mode);bridge.userData.setLightingMode(mode);};
+document.querySelector<HTMLSelectElement>('nav select')!.onchange=e=>{const mode=(e.target as HTMLSelectElement).value.toLowerCase() as Mode;city.setMode(mode);model.userData.setLightingMode(mode);bridge.userData.setLightingMode(mode);};
 const initialView=new URLSearchParams(location.search).get('view');
 view(initialView&&views[initialView]?initialView:'aerial');city.resize();addEventListener('resize',()=>city.resize());
 const motionButton=document.querySelector<HTMLButtonElement>('#skyglider-motion')!;
