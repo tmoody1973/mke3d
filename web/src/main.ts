@@ -1,3 +1,5 @@
+import './skygliderRide.css';
+import {createSkygliderRide} from './skygliderRide';
 import { BMO_SITE, removeBmoPlaceholder } from './bmoSite';
 import { buildSummerfestRampEmbankments } from './summerfestRamps';
 import { createStreetLighting } from './streetLighting';
@@ -173,10 +175,14 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
     selectedLabelId = id;
     for (const [key, element] of labelElements) element.hidden = id !== undefined && key !== id;
   };
+  let skygliderPanelWasVisible=false;
+  let skygliderMotionPaused=reduceMotion;
+  let skygliderRide:ReturnType<typeof createSkygliderRide>|undefined;
   const showLandmark = (l: Landmark) => {
     hop?.close();
     focusLabels(l.id); panelTitle.textContent = l.name; panelBody.textContent = l.blurb;
     panelOsm.href = `https://www.openstreetmap.org/${l.osm}`; panel.hidden = false;
+    $('#landmark-skyglider').hidden=l.id!=='summerfest';
     roofControl.hidden=l.id!=='amfam';syncRoofControl();
     landmarkButtons.forEach((button, id) => button.setAttribute('aria-current', String(id === l.id)));
     closeDrawer();
@@ -184,7 +190,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
   for (const l of LANDMARKS) {
     const p = locate(l);
     const label = makeLabel(l, p.x, p.y + l.labelHeight, p.z, lm => {
-      director.stopTour(); syncTourBtn(); director.flyToLandmark(lm); showLandmark(lm);
+      skygliderRide?.stop(); director.stopTour(); syncTourBtn(); director.flyToLandmark(lm); showLandmark(lm);
     });
     labelElements.set(l.id, label.element); city.landmarks.add(label);
   }
@@ -255,11 +261,11 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
     document.querySelectorAll('button[data-mode]').forEach(x => x.setAttribute('aria-pressed', String(x === btn))); }));
   document.querySelectorAll<HTMLButtonElement>('button[data-tour-speed]').forEach(btn => btn.addEventListener('click', () => {
     director.setSpeed(Number(btn.dataset.tourSpeed)); document.querySelectorAll('button[data-tour-speed]').forEach(x => x.setAttribute('aria-pressed', String(x === btn))); }));
-  $('#reset').addEventListener('click', () => { director.stopTour(); syncTourBtn(); director.flyTo(home.pos, home.target, 2); panel.hidden = true; focusLabels(); landmarkButtons.forEach(b => b.setAttribute('aria-current', 'false')); });
+  $('#reset').addEventListener('click', () => { skygliderRide?.stop(); director.stopTour(); syncTourBtn(); director.flyTo(home.pos, home.target, 2); panel.hidden = true; focusLabels(); landmarkButtons.forEach(b => b.setAttribute('aria-current', 'false')); });
   for (const l of LANDMARKS) {
     const button = document.createElement('button'); button.type = 'button'; button.className = 'landmark-button';
     button.setAttribute('aria-current', 'false'); button.innerHTML = `<span class="landmark-name"></span>`; button.querySelector('.landmark-name')!.textContent = l.name;
-    button.addEventListener('click', () => { director.stopTour(); syncTourBtn(); director.flyToLandmark(l); showLandmark(l); });
+    button.addEventListener('click', () => { skygliderRide?.stop(); director.stopTour(); syncTourBtn(); director.flyToLandmark(l); showLandmark(l); });
     landmarkButtons.set(l.id, button); landmarkList.append(button);
   }
   const filterLandmarks = () => {
@@ -283,8 +289,9 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
     if (!t.active) tourStatus.textContent = `Tour ready · ${tourStops.length} stops`;
     else if (t.paused) tourStatus.textContent = `Paused · stop ${t.index + 1} of ${tourStops.length}`;
   };
-  tourType.addEventListener('change', () => { hop?.tour.stop(); director.stopTour(); syncTourBtn(); });
+  tourType.addEventListener('change', () => { skygliderRide?.stop(); hop?.tour.stop(); director.stopTour(); syncTourBtn(); });
   tourBtn.addEventListener('click', () => {
+    skygliderRide?.stop();
     if (tourType.value !== 'landmarks') {
       if (hop?.tour.active) hop.tour.togglePause();
       else if (hop && !hop.startTour(tourType.value)) { tourStatus.textContent = 'No streetcar available on this line in the preview.'; return; }
@@ -316,16 +323,19 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
     document.body.classList.add('drawer-open'); destinationBoard.inert = false; drawerToggle.setAttribute('aria-expanded', 'true'); syncDrawerToggle(true); landmarkSearch.focus();
   });
   document.addEventListener('pointerdown', e => { if (document.body.classList.contains('drawer-open') && !destinationBoard.contains(e.target as Node) && !drawerToggle.contains(e.target as Node)) closeDrawer(true); });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { panel.hidden = true; focusLabels(); closeDrawer(true); } if (!driving?.active && !walking?.active && e.key === ' ' && document.activeElement === document.body) { e.preventDefault(); tourBtn.click(); } });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { panel.hidden = true; focusLabels(); closeDrawer(true); } if (!skygliderRide?.active && !driving?.active && !walking?.active && e.key === ' ' && document.activeElement === document.body) { e.preventDefault(); tourBtn.click(); } });
   syncTourBtn();
+  // Release the seat before Hop handlers capture their new camera transition.
+  $('#hop-board').addEventListener('click',event=>{if((event.target as HTMLElement).closest('#hop-toggle,#hop-follow,#hop-overview'))skygliderRide?.stop();},{capture:true});
+  $('#hop-car').addEventListener('change',()=>skygliderRide?.stop(),{capture:true});
   void loadHop({ city, director, dataUrl: `${DATA}/hop/network.json`, reducedMotion: reduceMotion,
-    onFocus: (dismissDrawer) => { panel.hidden = true; focusLabels('__hop__'); syncTourBtn(); landmarkButtons.forEach(b => b.setAttribute('aria-current', 'false')); if (dismissDrawer) closeDrawer(); }
+    onFocus: (dismissDrawer) => { skygliderRide?.stop(); panel.hidden = true; focusLabels('__hop__'); syncTourBtn(); landmarkButtons.forEach(b => b.setAttribute('aria-current', 'false')); if (dismissDrawer) closeDrawer(); }
   }).then(feature => { hop = feature; if (hop) tourType.querySelectorAll<HTMLOptionElement>('option').forEach(option => { option.disabled = false; }); syncTourBtn(); }).catch(() => {
     $('#hop-status').textContent = 'Streetcar preview unavailable. Reload to try again.';
     $<HTMLButtonElement>('#hop-toggle').disabled = true;
   });
   driving=createDrivingMode({city,canvas,
-    onEnter(){walking?.stop();hop?.close();director.stopTour();syncTourBtn();panel.hidden=true;closeDrawer();},
+    onEnter(){skygliderRide?.stop();walking?.stop();hop?.close();director.stopTour();syncTourBtn();panel.hidden=true;closeDrawer();},
     onExit(){syncDrawerLayout();refocus();},
     prefetch(x,z){tiles.update(x,z);}
   });
@@ -344,14 +354,16 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
   });
   walking=createWalkingMode({city,canvas,places:walkPlaces,
     preferredPlace:()=>selectedLabelId,
-    onEnter(){driving?.stop();hop?.close();director.stopTour();director.cancelFlight();syncTourBtn();panel.hidden=true;closeDrawer();},
+    onEnter(){skygliderRide?.stop();driving?.stop();hop?.close();director.stopTour();director.cancelFlight();syncTourBtn();panel.hidden=true;closeDrawer();},
     onExit(){syncDrawerLayout();refocus();},
     prefetch(x,z){tiles.update(x,z);},
     setLighting(mode){document.querySelector<HTMLButtonElement>(`button[data-mode="${mode}"]`)?.click();},
   });
+  if(summerfest)skygliderRide=createSkygliderRide({city,canvas,model:summerfest,setLighting(mode){document.querySelector<HTMLButtonElement>(`button[data-mode="${mode}"]`)?.click();},getMotionPaused:()=>skygliderMotionPaused,setMotionPaused(paused){skygliderMotionPaused=paused;},onEnter(){driving?.stop();walking?.stop();hop?.close();hop?.tour.stop();director.stopTour();director.cancelFlight();syncTourBtn();skygliderPanelWasVisible=!panel.hidden;panel.hidden=true;closeDrawer();tiles.update(500,330);},onExit(){panel.hidden=!skygliderPanelWasVisible;refocus();}});
+  $('#landmark-skyglider').addEventListener('click',()=>skygliderRide?.start());
   $('#landmark-walk').addEventListener('click',()=>walking?.start(selectedLabelId));
-  import.meta.hot?.dispose(() => {hop?.dispose();driving?.dispose();walking?.dispose();streetLighting.dispose();summerfest?.userData.dispose?.();});
-  (window as unknown as { __MKE3D_STATE__: object }).__MKE3D_STATE__ = { city, director, landmarks: LANDMARKS, landmarkButtons, streetLighting };
+  import.meta.hot?.dispose(() => {skygliderRide?.dispose();hop?.dispose();driving?.dispose();walking?.dispose();streetLighting.dispose();summerfest?.userData.dispose?.();});
+  (window as unknown as { __MKE3D_STATE__: object }).__MKE3D_STATE__ = { city, director, skygliderRide, landmarks: LANDMARKS, landmarkButtons, streetLighting };
 
   // render loop
   const clock = new THREE.Clock();
@@ -374,11 +386,12 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
   const loop = () => {
     const dt = clock.getDelta(), now = performance.now();
     hoan?.userData.updateLighting?.(now / 1000, reduceMotion);
-    summerfest?.userData.update?.(dt,reduceMotion);
+    summerfest?.userData.update?.(dt,skygliderMotionPaused);
     hop?.update(dt);
-    if(!driving?.active&&!walking?.active)director.update(now);
+    if(!skygliderRide?.active&&!driving?.active&&!walking?.active)director.update(now);
     driving?.update(dt);
     walking?.update(dt);
+    skygliderRide?.update();
     const rideState = `${tourType.value}:${hop?.tour.active}:${hop?.tour.paused}:${hop?.tour.label}`;
     if (rideState !== lastRideState) { lastRideState = rideState; syncTourBtn(); }
     // Flights now take time: stream the neighborhoods along the route too.
@@ -386,7 +399,7 @@ function start(manifest: Manifest, geo: LandmarkGeo) {
       refocus(); lastTileFocus.copy(city.controls.target); lastFlightTiles = now;
     }
     streetLighting.update(city.camera.position);
-    city.render(dt, !!driving?.active || !!walking?.active || director.isAnimating);
+    city.render(dt, !!skygliderRide?.active || !!driving?.active || !!walking?.active || director.isAnimating);
     if (now - lastCollisionCheck >= 100) { resolveLabelCollisions(); lastCollisionCheck = now; }
     requestAnimationFrame(loop);
   };

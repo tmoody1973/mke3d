@@ -1,3 +1,5 @@
+import './skygliderRide.css';
+import {createSkygliderRide} from './skygliderRide';
 import {buildSummerfestRampEmbankments} from './summerfestRamps';
 import * as THREE from 'three';
 import {createCity,type Mode} from './scene';
@@ -28,6 +30,9 @@ for(const [i,j] of [[0,0],[0,-1],[-1,0],[-1,-1]]){
  adaptSummerfestTile(g,{i,j},groundAt,rawTerrain,terrain);
  adaptHoanContextTile(g,{i,j},rawTerrain,groundAt);city.tiles.add(g);
 }
+let motionPaused=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ride=createSkygliderRide({city,canvas:document.querySelector('canvas')!,model,setLighting(mode){city.setMode(mode);model.userData.setLightingMode(mode);bridge.userData.setLightingMode(mode);document.querySelector<HTMLSelectElement>('nav select')!.value=mode[0].toUpperCase()+mode.slice(1);},getMotionPaused:()=>motionPaused,setMotionPaused(paused){motionPaused=paused;syncMotion();}});
+document.querySelector<HTMLButtonElement>('#skyglider-ride')!.onclick=()=>ride.start();
 const views:Record<string,{eye:[number,number,number];target:[number,number,number]}>= {
  skyglider:{eye:[930,110,338],target:[499,8,338]},
  northTerminal:{eye:[476,8,82],target:[489.2,4,97]},
@@ -47,14 +52,13 @@ const views:Record<string,{eye:[number,number,number];target:[number,number,numb
  north:{eye:[700,95,-170],target:[540,7,35]},
  promenade:{eye:[670,17,350],target:[566,8,285]},
 };
-function view(key:string){const v=views[key];city.camera.position.fromArray(v.eye);city.controls.target.fromArray(v.target);city.controls.update();document.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.angle===key)));}
+function view(key:string){ride.stop();const v=views[key];city.camera.position.fromArray(v.eye);city.controls.target.fromArray(v.target);city.controls.update();document.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.angle===key)));}
 document.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.onclick=()=>view(b.dataset.angle!));
-document.querySelector('select')!.onchange=e=>{const mode=(e.target as HTMLSelectElement).value.toLowerCase() as Mode;city.setMode(mode);model.userData.setLightingMode(mode);bridge.userData.setLightingMode(mode);};
+document.querySelector('nav select')!.onchange=e=>{const mode=(e.target as HTMLSelectElement).value.toLowerCase() as Mode;city.setMode(mode);model.userData.setLightingMode(mode);bridge.userData.setLightingMode(mode);};
 const initialView=new URLSearchParams(location.search).get('view');
 view(initialView&&views[initialView]?initialView:'aerial');city.resize();addEventListener('resize',()=>city.resize());
-let motionPaused=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const motionButton=document.querySelector<HTMLButtonElement>('#skyglider-motion')!;
 const syncMotion=()=>{motionButton.textContent=motionPaused?'Play Skyglider':'Pause Skyglider';motionButton.setAttribute('aria-pressed',String(motionPaused));};syncMotion();
 motionButton.onclick=()=>{motionPaused=!motionPaused;syncMotion();};
-let previous=performance.now();city.renderer.setAnimationLoop(now=>{const dt=Math.min(.05,(now-previous)/1000);model.userData.update(dt,motionPaused);bridge.userData.updateLighting(now/1000,motionPaused);city.render(dt);previous=now;});
-if(import.meta.hot)import.meta.hot.dispose(()=>{city.renderer.setAnimationLoop(null);model.userData.dispose?.();city.controls.dispose();city.renderer.dispose();});
+let previous=performance.now();city.renderer.setAnimationLoop(now=>{const dt=Math.min(.05,(now-previous)/1000);model.userData.update(dt,motionPaused);bridge.userData.updateLighting(now/1000,motionPaused);ride.update();city.render(dt,ride.active);previous=now;});
+if(import.meta.hot)import.meta.hot.dispose(()=>{ride.dispose();city.renderer.setAnimationLoop(null);model.userData.dispose?.();city.controls.dispose();city.renderer.dispose();});

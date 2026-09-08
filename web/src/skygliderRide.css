@@ -1,0 +1,12 @@
+body.skyglider-riding #destination-board,body.skyglider-riding #drawer-toggle,body.skyglider-riding #bar-ui,body.skyglider-riding #panel,body.skyglider-riding #labels,body.skyglider-riding #hop-follow-bar,body.skyglider-riding #map-navigation-help,body.skyglider-riding nav[aria-label="Summerfest review controls"],body.skyglider-riding>header{display:none!important}
+body.skyglider-riding #c{left:0;width:100%}
+body.skyglider-riding canvas{cursor:grab;touch-action:none}
+body.skyglider-riding canvas:active{cursor:grabbing}
+#skyglider-ride-hud{position:fixed;top:max(16px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:20;padding:12px 16px;border:1px solid #65747b;border-radius:8px;background:#1d2428f2;color:#f2f1e8;box-shadow:0 8px 24px #0003;max-width:calc(100vw - 24px);width:max-content;font:14px system-ui}
+#skyglider-ride-hud[hidden]{display:none}
+#skyglider-ride-hud strong{font-size:16px}
+#skyglider-ride-help{margin:5px 0 10px;color:#cbd2d5;font-size:12px}
+.skyglider-ride-actions{display:flex;flex-wrap:wrap;gap:6px}
+#skyglider-ride-hud button,#skyglider-ride-hud select{min-height:44px;padding:7px 12px;border:1px solid #819097;border-radius:5px;background:#29363c;color:#f2f1e8;font:inherit;cursor:pointer}
+#skyglider-ride-hud [data-exit]{background:#e6ab45;color:#172025;border-color:#e6ab45;font-weight:600}
+#skyglider-ride-hud :focus-visible{outline:3px solid #e6ab45;outline-offset:2px}
